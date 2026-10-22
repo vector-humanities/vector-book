@@ -14,6 +14,7 @@ Every key, with its default. Strings marked *Markdown* may use emphasis and line
 | `credit` | none | *Markdown.* Title page and covers, e.g. "A Vector Translation Project by …" |
 | `affiliation` | none | Back cover, under the credit |
 | `credits` | none | *Markdown, paragraphs.* The page facing the title page: edition translated, library and identifier, image credits, conventions |
+| `licence` | none | *Markdown.* Licence statement on the credits page, e.g. `"This work is licensed under a [Creative Commons Attribution 4.0 International Licence](https://creativecommons.org/licenses/by/4.0/) (CC BY 4.0)."` |
 | `isbn` | none | Printed on the credits page and the back cover; added as the last step before publication |
 | `doi` | none | Printed on the credits page as a link, e.g. `"10.5281/zenodo.1234567"` |
 | `lang`, `region` | `"en"`, `"gb"` | Hyphenation and quotation marks |

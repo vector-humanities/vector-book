@@ -173,6 +173,7 @@
   #set text(8.2pt)
   #set par(first-line-indent: 0em, justify: false, spacing: 1em)
   #meta.credits
+  #if meta.licence != none { v(0.4em); meta.licence }
   #if meta.isbn != none or meta.doi != none {
     v(0.4em)
     if meta.isbn != none [ISBN #meta.isbn \ ]

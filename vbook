@@ -34,7 +34,7 @@ NEVER = "\ue000\ue001"  # a pattern that never matches, for books with no protec
 DEFAULTS = {
     "book": {"title": "Untitled", "subtitle": None, "author": None, "original-title": None,
              "running-title": None, "credit": None, "affiliation": None, "credits": None,
-             "lang": "en", "region": "gb", "output": "book/book.pdf", "isbn": None, "doi": None},
+             "lang": "en", "region": "gb", "output": "book/book.pdf", "isbn": None, "doi": None, "licence": None},
     "design": {"template": "classic", "cover": "frame", "page": {}, "fonts": {},
                "no-hyphen": [], "end-blanks": 0, "figure-dpi": 300, "notes": "chapter"},
     "sources": {"front": [], "body": ["text/*.md"], "back": [], "glossary": None,
@@ -233,6 +233,7 @@ def meta_typ(root, cfg):
         "affiliation": md2ty(b["affiliation"]),
         "isbn": tystr(b["isbn"]) if b["isbn"] else "none",
         "doi": tystr(b["doi"]) if b["doi"] else "none",
+        "licence": md2ty(b["licence"]),
         "credits": md2ty(b["credits"]) if b["credits"] else "[]",
         "lang": tystr(b["lang"]),
         "region": tystr(b["region"]),
