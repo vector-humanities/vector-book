@@ -24,6 +24,8 @@ A level-one heading opens a chapter: a new recto, sunk 22 mm, the title in small
 | `orig` | The title in the source language, beneath the title |
 | `run` | Running head on rectos, when the title is too long |
 
+A note on the title (`# Title[^c1-ed] {…}`) is set after the title on the opening page, numbered first in the chapter, and kept out of the Contents and the running heads. A section file without a level-one heading continues the chapter before it.
+
 With `parse-headings = true` in `book.toml`, a heading written as `Chapter 1. Categorical Contingency (第一章 定言的偶然)` is read the same way: a leading word and number become `num`, and a final parenthesis containing Chinese, Japanese or Korean characters becomes `orig`. Use this for a master file written before the attributes existed.
 
 In `classic`, level-two headings are centred small capitals, level three is italic and level four is roman; the other templates differ (see [config.md](config.md#templates)). If the files use `##` for chapters, set `shift-headings = -1`; a heading shifted above level one (a document title) is dropped.
@@ -38,7 +40,7 @@ Running heads give the running title on versos and the chapter on rectos, and no
 
 marks where page 12 of the source edition begins. It is set as a small number in the outer margin, on the baseline of the line where the page begins (`classic`, `kintsugi`), or inline as a small grey `[12]` (`modern`). The pattern is configurable (`markers.page`, a regular expression whose first group is the number). Further patterns in `markers.strip` are removed from the book and kept in the files: in a translation from page images, the image number beside each page marker.
 
-Markers inside a footnote definition are dropped, so that notes do not put numbers in the margin. Markers inside code spans and code blocks are left alone.
+A marker standing alone as a paragraph, such as `[p. 311]` on the line before a chapter heading, joins the next paragraph, so that its number is set beside the first line of the new page and not on the page before the chapter opens. Markers inside a footnote definition are dropped, so that notes do not put numbers in the margin. Markers inside code spans and code blocks are left alone.
 
 ## Notes
 
@@ -100,6 +102,10 @@ Contingency = *the encounter*
 ```
 
 The first paragraph is the head, the list items are the branches, and a span with the class `tag` is set small and grey. Use `\` at the end of a line for a line break inside the head or a branch.
+
+## Section breaks
+
+A paragraph of asterisks or dots alone (`* * *`, `· · ·`, `⁂`) is a section break: the mark is set centred and spaced, with space above and below, and the next paragraph starts without an indent. `::: break` with an empty body sets the template's mark, three spaced asterisks. A horizontal rule (`---`) is set only as a small space.
 
 ## Alignment
 

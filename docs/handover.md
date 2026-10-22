@@ -37,11 +37,13 @@ Nothing about scripts or languages needs declaring: `vbook sweep` reads every ch
 
 ## What the text must carry
 
-- One level-one heading per section file, with its attributes: `# Title {num="Chapter 1" orig="原題" run="Short title"}`.
+- At most one level-one heading per section file, with its attributes: `# Title {num="Chapter 1" orig="原題" run="Short title"}`. A file without one continues the chapter before it, so a text whose sections come back from separate agents can keep one file per section under a single chapter heading.
 - Footnote labels unique across the whole book, prefixed by section (`[^c3s8-4]`).
 - `[p. N]` page markers in the pattern `[markers]` names.
 - Figures as an image line and a `**Figure N.**` caption, with `Key:` or `Labels:` before any key; paths relative to the book folder.
-- Schemes, signatures and other layout as in [conventions.md](conventions.md) (`::: scheme`, `::: right`).
+- Section breaks as a paragraph of asterisks or dots alone (`* * *`, `· · ·`), set as written.
+- Schemes, signatures and other layout as in [conventions.md](conventions.md) (`::: scheme`, `::: right`, `::: break`).
+- A note on a text's title goes on the heading: `# Title[^label] {…}`.
 
 Page markers give every passage a stable reference for proof corrections; no further passage identifiers are needed.
 

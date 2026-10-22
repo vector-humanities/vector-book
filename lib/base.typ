@@ -55,7 +55,9 @@
   if r.rule != none { block(width: 100%, stroke: (bottom: r.rule), inset: (bottom: 1.5mm), body) } else { body }
 }
 
-#let base-chapter(st, title, num: none, orig: none, run: none) = {
+#let vb-title-note = state("vb-title-note", none)
+
+#let base-chapter(st, title, num: none, orig: none, run: none, note: none) = {
   pagebreak(to: "odd", weak: true)
   v(st.chapter-sink)
   let al = st.h1.align
@@ -67,7 +69,9 @@
   }
   context if vb-style.get().at("notes-reset", default: true) { counter(footnote).update(0) }
   vb-run.update(if run != none { run } else { title })
+  vb-title-note.update(note)
   heading(level: 1, supplement: if num != none { num } else { [] }, title)
+  vb-title-note.update(none)
   if orig != none { align(al, text(st.orig.size, fill: st.orig.fill, orig)) }
   v(st.chapter-gap)
 }
@@ -83,6 +87,7 @@
   set text(font: fonts, size: pg.size, lang: meta.lang, region: meta.region, hyphenate: true, number-type: "old-style")
   set par(justify: true, leading: st.leading, spacing: st.spacing, first-line-indent: (amount: st.indent, all: false))
   show heading: set text(font: fonts, weight: "regular")
+  show heading: set par(justify: false)
   show regex(meta.nohyphen): it => box(it)
 
   set page(width: pg.width, height: pg.height,
@@ -91,7 +96,10 @@
     footer: context { if vb-folio.get() { align(center, text(st.folio.size, fill: st.folio.fill, counter(page).display())) } })
 
   show heading.where(level: 1): it => block(width: 100%, above: 0pt, below: 4mm,
-    align(st.h1.align, head-text(st, st.h1, it.body)))
+    align(st.h1.align, head-text(st, st.h1, it.body) + context {
+      let n = vb-title-note.get()
+      if n != none { footnote(n) }
+    }))
   show heading.where(level: 2): it => block(width: 100%, above: 1.4em, below: 0.9em, sticky: true, {
     show regex(if st.section-kanji { "^\d+\.\s+" } else { "\u{E000}\u{E001}" }): m => {
       kanji(int(m.text.trim().trim(".")))
@@ -143,6 +151,7 @@
 }
 
 #let base-title-page(st, meta) = { pagebreak(to: "odd", weak: true); plain-page[
+  #set text(hyphenate: false)
   #let t = st.title
   #let f = if t.font != none { (font: t.font) } else { (:) }
   #v(55mm)

@@ -169,10 +169,38 @@ local function chapter(h)
   local title, num, orig = h.content, h.attributes.num, h.attributes.orig
   if cfg.parse and not num and not orig then title, num, orig = parse_heading(title) end
   local args = { '[' .. ty(strip_notes(title)) .. ']' }
+  -- a note on the title is set after the title on the opening page, and kept out of the Contents and running heads
+  local notes = {}
+  pandoc.Inlines(title):walk({ Note = function(n) table.insert(notes, tyb(n.content)) end })
+  if #notes > 0 then table.insert(args, 'note: [' .. table.concat(notes, ' ') .. ']') end
   if num then table.insert(args, 'num: [' .. ty(pandoc.Inlines(num)) .. ']') end
   if orig then table.insert(args, 'orig: [' .. ty(pandoc.Inlines(orig)) .. ']') end
   if h.attributes.run then table.insert(args, 'run: [' .. ty(pandoc.Inlines(h.attributes.run)) .. ']') end
   return pandoc.RawBlock('typst', '#chapter(' .. table.concat(args, ', ') .. ')')
+end
+
+-- a paragraph holding only page markers: its markers join the next paragraph, so that a marker
+-- before a chapter heading is not set on the page before the chapter opens
+local function is_marker_para(b)
+  if b.t ~= 'Para' and b.t ~= 'Plain' then return false end
+  local any = false
+  for _, x in ipairs(b.content) do
+    if x.t == 'RawInline' and x.format == 'typst' and x.text:match('^#pm%(') then any = true
+    elseif x.t ~= 'Space' and x.t ~= 'SoftBreak' then return false end
+  end
+  return any
+end
+
+-- a section break: a paragraph of asterisks or dots alone ("* * *", "· · ·", "⁂"), or a ::: break block
+local function is_break_para(b)
+  if b.t ~= 'Para' then return false end
+  local s = pandoc.utils.stringify(b.content)
+  return s:match('%S') ~= nil and utf8.len(s) <= 12 and s:gsub('[%*%s]', ''):gsub('·', ''):gsub('•', ''):gsub('⁂', '') == ''
+end
+
+local function section_break(inl)
+  if inl and #inl > 0 then return pandoc.RawBlock('typst', '#section-break[' .. ty(inl) .. ']') end
+  return pandoc.RawBlock('typst', '#section-break()')
 end
 
 -- column widths in proportion to content, so long cells do not crush their neighbours.
@@ -235,6 +263,10 @@ return {
     end,
     Table = widths,
     Div = function(d)
+      if d.classes:includes('break') then
+        local inl = d.content[1] and d.content[1].content or nil
+        return section_break(inl)
+      end
       for cls, al in pairs({ right = 'right', centre = 'center', center = 'center' }) do
         if d.classes:includes(cls) then
           local out = pandoc.Blocks({ pandoc.RawBlock('typst', '#align(' .. al .. ')[') })
@@ -260,11 +292,22 @@ return {
     traverse = 'topdown',
     Blocks = function(blocks)
       local out = pandoc.Blocks({})
+      local held = pandoc.Inlines({})   -- page markers standing alone, waiting for the next paragraph
       local i = 1
       while i <= #blocks do
         local b = blocks[i]
         local img = figure_image(b)
-        if img then
+        if is_marker_para(b) then
+          for _, x in ipairs(b.content) do if x.t == 'RawInline' then held:insert(x) end end
+        elseif is_break_para(b) then
+          out:insert(section_break(b.content))
+        elseif #held > 0 and (b.t == 'Para' or b.t == 'Plain') then
+          local inl = pandoc.Inlines({})
+          inl:extend(held); inl:extend(b.content)
+          b.content = inl
+          held = pandoc.Inlines({})
+          out:insert(b)
+        elseif img then
           local cap = figure_caption(b)
           if is_caption_para(blocks[i + 1]) then
             cap = blocks[i + 1].content
@@ -276,6 +319,7 @@ return {
         end
         i = i + 1
       end
+      if #held > 0 then out:insert(pandoc.Para(held)) end
       return out
     end,
   },

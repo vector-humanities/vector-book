@@ -89,6 +89,12 @@
   ..t.clusters().map(c => box(width: size * 1.2, height: size * 1.1,
     align(center + horizon, text(size, weight: weight, top-edge: "ascender", bottom-edge: "descender", c)))))
 
+// Section break: the mark centred, with space above and below; the next paragraph starts flush
+#let section-break(..args) = {
+  let mark = if args.pos().len() > 0 { args.pos().at(0) } else { [\* \* \*] }
+  block(above: 1.1em, below: 1.1em, width: 100%, align(center, text(tracking: 0.3em, mark)))
+}
+
 // A tracked line of capitals on a cover or title page; emphasis in it is set in small capitals, since tracked italic reads poorly beside tracked capitals
 #let tracked-line(size, body, tracking: 0.08em) = text(size, tracking: tracking, {
   show emph: it => smallcaps(it.body)

@@ -5,7 +5,7 @@
   let c = meta.cover
   plain-page(fill: c.paper, margin: (x: 20mm, y: 26mm))[
     #set par(first-line-indent: 0em, justify: false)
-    #set text(fill: c.ink)
+    #set text(fill: c.ink, hyphenate: false)
     #align(center)[
       #v(30mm)
       #if meta.author != none { text(10pt, tracking: 0.32em, upper(meta.author)); v(8mm) }
