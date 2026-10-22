@@ -79,4 +79,6 @@ All paths are relative to the book folder; Typst's root is the book folder. The 
 | Concordance crushed into narrow columns | Equal widths from the dash row | Widths from contents |
 | Build failed after the move to the repository | Absolute paths | Paths relative to the book folder |
 | Margin page numbers half a line low | Number placed with its top on the baseline | Number raised by its own height, baselines aligned |
+| Keys of seven figures set whole in the List of Figures | Keys beginning "Letters as in Figure 8" with no "Labels:" or "Key:" marker (found after the move to Vector Book) | "Key:" added in the source; `vbook check` lists long captions with no marker |
+| Tracked italic title on the back cover | Emphasis in a tracked capitals line set as italic | Emphasis in tracked lines set in small capitals |
 | Author's preface found late | It stands on an unnumbered page before the contents | Survey every page image before partitioning (Vector Translation, rule 2) |
