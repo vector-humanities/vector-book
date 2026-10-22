@@ -1,0 +1,11 @@
+// Source for figures/fig-01-encounter.png: two independent series meeting at a point, labelled in Japanese.
+#set page(width: 70mm, height: 46mm, margin: 3mm, fill: rgb("#f4f0e6"))
+#set text(font: ("Hiragino Mincho ProN", "Noto Serif JP"), size: 9pt, fill: rgb("#2a2622"))
+#place(top + left, dx: 4mm, dy: 4mm, [甲])
+#place(top + left, dx: 4mm, dy: 33mm, [乙])
+#place(top + left, line(start: (8mm, 7mm), end: (34mm, 21mm), stroke: 0.7pt))
+#place(top + left, line(start: (8mm, 35mm), end: (34mm, 21mm), stroke: 0.7pt))
+#place(top + left, line(start: (34mm, 21mm), end: (62mm, 21mm), stroke: (thickness: 0.5pt, dash: "dashed")))
+#place(top + left, dx: 33mm, dy: 20mm, circle(radius: 1mm, fill: rgb("#2a2622")))
+#place(top + left, dx: 30mm, dy: 25mm, [邂逅])
+#place(top + left, dx: 52mm, dy: 15mm, text(7.5pt)[偶然])

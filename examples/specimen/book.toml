@@ -1,0 +1,55 @@
+# Vector Book specimen. Every key is documented in docs/config.md.
+
+[book]
+title = "A Vector Book Specimen"
+subtitle = "Conventions for typesetting translations and editions"
+author = "Vector Humanities"
+original-title = "書物の設計"
+running-title = "A Vector Book Specimen"
+credit = "Vector Book · Vector Humanities"
+affiliation = "vector-humanities.github.io"
+output = "book/specimen.pdf"
+credits = """
+*A Vector Book Specimen*. Set with Vector Book, the book design tool of Vector Humanities, from Markdown section files through Pandoc and Typst. The design is the one first made for the vector translation of Kuki Shūzō's 偶然性の問題 (*The Problem of Contingency*, 1935).
+
+The Japanese verse is Matsuo Bashō's, the Greek is Heraclitus as transmitted by Heraclitus Homericus; both are in the public domain. The figure was drawn for this specimen.
+
+Numbers in the outer margin give the pages of a notional source edition. Footnotes are the translator's; insertions into the source text are set in tortoise-shell brackets, 〔 〕.
+
+Released under the GNU General Public License, version 3 or later.
+"""
+
+[design]
+template = "classic"
+cover = "frame"
+no-hyphen = ["contingency", "contingencies"]
+end-blanks = 2
+figure-dpi = 300
+
+[sources]
+front = ["front/*.md"]
+body = ["text/*.md"]
+back = ["back/*.md"]
+glossary = "glossary.csv"
+glossary-columns = ["source", "reading", "english", "notes"]
+glossary-headers = ["Source", "Reading", "English", "Notes"]
+overlays = "figures/overlays.json"
+
+[markers]
+page = '\[p\. (\d+)\]'
+strip = ['\[img \d+\]']
+
+[cover]
+paper = "#efe8d8"
+ink = "#1f1b16"
+accent = "#a8873c"
+frame = { left = "見本", centre = "書物の設計", right = "ベクトル人文学" }
+
+[back]
+quote = "The translator directs. The agents draft, check and assemble."
+quote-source = "Vector Translation, *Method*"
+blurb = """
+This specimen sets out the conventions Vector Book reads from Markdown: chapters with their original titles, source page numbers in the margin, translator's notes, insertions in tortoise-shell brackets, verse with its original in a note, figures with English glosses over their labels, schemes, tables that break across pages, and a glossary built from the project's glossary file.
+
+The same files that make this book make any other: write the text in section files, describe the book in `book.toml`, and run `vbook build`.
+"""

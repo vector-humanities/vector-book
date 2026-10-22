@@ -1,0 +1,454 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""Vector Book: typeset a book from Markdown section files with Pandoc and Typst.
+
+    vbook new DIR              start a book from the starter project
+    vbook build [DIR]          assemble, convert and compile the book
+    vbook check [DIR]          page, note and figure counts; missing glyphs
+    vbook sweep [DIR]          glyph sweep: every non-ASCII character, checked for font fallback
+    vbook proof [DIR]          contact sheet of the built book (build/proof.png)
+    vbook fonts [DIR]          the font stacks and whether each font is installed
+
+DIR holds book.toml (see docs/config.md). Needs Python 3.11+, pandoc 3 and typst 0.13+.
+"""
+import argparse
+import csv
+import glob
+import io
+import json
+import re
+import shutil
+import subprocess
+import sys
+import tomllib
+import unicodedata
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+LENGTH = re.compile(r"^-?\d+(\.\d+)?(mm|cm|pt|in|em)$")
+WORKING = re.compile(r"<!-- working -->.*?<!-- /working -->\n?", re.S)
+NEVER = "\ue000\ue001"  # a pattern that never matches, for books with no protected words
+
+DEFAULTS = {
+    "book": {"title": "Untitled", "subtitle": None, "author": None, "original-title": None,
+             "running-title": None, "credit": None, "affiliation": None, "credits": None,
+             "lang": "en", "region": "gb", "output": "book/book.pdf"},
+    "design": {"template": "classic", "cover": "frame", "page": {}, "fonts": {},
+               "no-hyphen": [], "end-blanks": 0, "figure-dpi": 300},
+    "sources": {"front": [], "body": ["text/*.md"], "back": [], "glossary": None,
+                "glossary-columns": ["source", "reading", "english"],
+                "glossary-headers": ["Source", "Reading", "English"],
+                "glossary-title": "Glossary", "overlays": "figures/overlays.json",
+                "parse-headings": False, "shift-headings": 0, "bibliography": None, "csl": None},
+    "markers": {"page": r"\[p\. (\d+)\]", "strip": []},
+    "frontispiece": None,
+    "cover": {"paper": "#efe8d8", "ink": "#1f1b16", "accent": "#a8873c", "frame": None},
+    "back": {"portrait": None, "quote": None, "quote-source": None, "blurb": None},
+}
+
+TEMPLATE_DEFAULTS = {
+    "classic": {"width": "156mm", "height": "234mm", "inside": "22mm", "outside": "26mm",
+                "top": "22mm", "bottom": "24mm", "size": "10.5pt",
+                "text": ["EB Garamond 12", "Gentium Book Plus", "Hiragino Mincho ProN", "Noto Serif JP",
+                         "STIX Two Text", "STIX Two Math", "Apple Symbols"],
+                "mono": ["Menlo", "DejaVu Sans Mono", "Hiragino Mincho ProN"]},
+}
+
+
+def die(msg):
+    sys.exit(f"vbook: {msg}")
+
+
+def merge(base, over):
+    out = dict(base)
+    for k, v in (over or {}).items():
+        out[k] = merge(base[k], v) if isinstance(base.get(k), dict) and isinstance(v, dict) else v
+    return out
+
+
+def load(root):
+    p = root / "book.toml"
+    if not p.exists():
+        die(f"no book.toml in {root}")
+    with open(p, "rb") as f:
+        cfg = merge(DEFAULTS, tomllib.load(f))
+    tpl = cfg["design"]["template"]
+    if tpl not in TEMPLATE_DEFAULTS:
+        die(f"unknown template {tpl!r}; have {', '.join(TEMPLATE_DEFAULTS)}")
+    td = TEMPLATE_DEFAULTS[tpl]
+    page = {k: cfg["design"]["page"].get(k, td[k]) for k in ("width", "height", "inside", "outside", "top", "bottom", "size")}
+    for k, v in page.items():
+        if not LENGTH.match(str(v)):
+            die(f"design.page.{k} = {v!r} is not a length such as 156mm or 10.5pt")
+    cfg["_page"] = page
+    cfg["_fonts"] = {k: cfg["design"]["fonts"].get(k, td[k]) for k in ("text", "mono")}
+    return cfg
+
+
+def run(cmd, **kw):
+    try:
+        return subprocess.run(cmd, check=True, text=True, capture_output=True, **kw)
+    except FileNotFoundError:
+        die(f"{cmd[0]} not found; install it (see README)")
+    except subprocess.CalledProcessError as e:
+        sys.stderr.write(e.stderr or "")
+        die(f"{' '.join(map(str, cmd[:2]))} failed")
+
+
+# ---- sources
+
+def files(root, patterns):
+    out = []
+    for pat in patterns:
+        hits = sorted(glob.glob(str(root / pat)))
+        out += [Path(h) for h in hits if Path(h).is_file()]
+    return out
+
+
+def markers(text, cfg):
+    """[p. N] to margin numbers; strip patterns removed; markers dropped inside note definitions."""
+    page = re.compile(cfg["markers"]["page"] + r"[ \t]?")
+    strips = [re.compile(s + r"[ \t]?") for s in cfg["markers"]["strip"]]
+    code = re.compile(r"(`+).+?\1")
+
+    def outside_code(line, fn):
+        out, pos = [], 0
+        for m in code.finditer(line):
+            out += [fn(line[pos:m.start()]), m.group(0)]
+            pos = m.end()
+        return "".join(out + [fn(line[pos:])])
+
+    def sub(seg, note):
+        for s in strips:
+            seg = s.sub("", seg)
+        return page.sub("" if note else (lambda m: f'`#pm("{m.group(1)}")`{{=typst}}'), seg)
+
+    lines, fenced = [], False
+    for line in text.split("\n"):
+        if re.match(r"^(```|~~~)", line):
+            fenced = not fenced
+        if not fenced:
+            note = bool(re.match(r"^\[\^[^\]]+\]:", line))
+            line = outside_code(line, lambda seg: sub(seg, note))
+        lines.append(line)
+    return "\n".join(lines)
+
+
+def glossary(root, cfg):
+    src = cfg["sources"]
+    if not src["glossary"]:
+        return ""
+    cols, heads = src["glossary-columns"], src["glossary-headers"]
+    with open(root / src["glossary"], encoding="utf-8", newline="") as f:
+        rows = list(csv.DictReader(f))
+    esc = lambda s: (s or "").replace("|", "\\|").replace("\n", " ").strip()
+    out = [f"# {src['glossary-title']}", "", "| " + " | ".join(heads) + " |", "|" + "---|" * len(heads)]
+    out += ["| " + " | ".join(esc(r.get(c)) for c in cols) + " |" for r in rows]
+    return "\n".join(out) + "\n"
+
+
+def sources(root, cfg):
+    s = cfg["sources"]
+    return files(root, s["front"]) + files(root, s["body"]) + files(root, s["back"])
+
+
+def assemble(root, cfg):
+    fs = sources(root, cfg)
+    if not fs:
+        die("no source files; set sources.body in book.toml")
+    chunks = [WORKING.sub("", f.read_text(encoding="utf-8")).strip() for f in fs]
+    md = "\n\n".join(markers(c, cfg) for c in chunks) + "\n\n" + glossary(root, cfg)
+    return md, fs
+
+
+# ---- Typst values
+
+def md2ty(md, block=False):
+    if md is None:
+        return "none"
+    out = run(["pandoc", "-f", "markdown-auto_identifiers", "-t", "typst", "--wrap=none"], input=str(md)).stdout.strip()
+    return "[" + out + "]"
+
+
+def plain(md):
+    return re.sub(r"[*_`]", "", md or "")
+
+
+def tystr(s):
+    return json.dumps(str(s), ensure_ascii=False)
+
+
+def colour(c):
+    if not re.match(r"^#[0-9a-fA-F]{6}$", c or ""):
+        die(f"colour {c!r} should be #rrggbb")
+    return f'rgb("{c}")'
+
+
+def image_dict(d, root, what):
+    if not d:
+        return "none"
+    img = d.get("image")
+    if not img or not (root / img).exists():
+        die(f"{what}: image {img!r} not found")
+    w = d.get("width", "56mm")
+    if not LENGTH.match(w):
+        die(f"{what}: width {w!r} is not a length")
+    return f'(image: "/{img}", width: {w}, caption: {md2ty(d.get("caption"))})'
+
+
+def meta_typ(root, cfg):
+    b, d, c, bk = cfg["book"], cfg["design"], cfg["cover"], cfg["back"]
+    pg = cfg["_page"]
+    words = [re.escape(w) for w in d["no-hyphen"]]
+    nohyphen = r"(?i)\b(" + "|".join(words) + r")\b" if words else NEVER
+    frame = c.get("frame")
+    frame_ty = "none" if not frame else "(" + ", ".join(f"{k}: {tystr(frame.get(k, ''))}" for k in ("left", "centre", "right")) + ")"
+    fields = {
+        "title": md2ty(b["title"]),
+        "title-plain": tystr(plain(b["title"])),
+        "subtitle": md2ty(b["subtitle"]),
+        "author": md2ty(b["author"]),
+        "author-plain": tystr(plain(b["author"]) or ""),
+        "original-title": md2ty(b["original-title"]),
+        "running-title": md2ty(b["running-title"] or b["title"]),
+        "credit": md2ty(b["credit"]),
+        "affiliation": md2ty(b["affiliation"]),
+        "credits": md2ty(b["credits"]) if b["credits"] else "[]",
+        "lang": tystr(b["lang"]),
+        "region": tystr(b["region"]),
+        "page": "(" + ", ".join(f"{k}: {v}" for k, v in pg.items()) + ")",
+        "fonts": "(" + ", ".join(f"{k}: (" + ", ".join(tystr(x) for x in v) + ",)" for k, v in cfg["_fonts"].items()) + ")",
+        "nohyphen": tystr(nohyphen),
+        "end-blanks": str(int(d["end-blanks"])),
+        "frontispiece": image_dict(cfg["frontispiece"], root, "frontispiece"),
+        "cover": f"(paper: {colour(c['paper'])}, ink: {colour(c['ink'])}, accent: {colour(c['accent'])}, frame: {frame_ty})",
+        "back": "(" + ", ".join([
+            f"portrait: {image_dict(bk.get('portrait'), root, 'back.portrait')}",
+            f"quote: {md2ty(bk.get('quote'))}",
+            f"quote-source: {md2ty(bk.get('quote-source'))}",
+            f"blurb: {md2ty(bk.get('blurb'))}"]) + ")",
+    }
+    return "#let meta = (\n" + "".join(f"  {k}: {v},\n" for k, v in fields.items()) + ")\n"
+
+
+# ---- build
+
+def textwidth_mm(pg):
+    def mm(v):
+        n, u = re.match(r"^(-?[\d.]+)(\w+)$", v).groups()
+        return float(n) * {"mm": 1, "cm": 10, "pt": 0.3528, "in": 25.4, "em": 3.7}[u]
+    return mm(pg["width"]) - mm(pg["inside"]) - mm(pg["outside"])
+
+
+def stage(root, cfg):
+    """Copy the library into build/.vbook so that Typst's root (the project) holds everything."""
+    bd = root / "build"
+    lib = bd / ".vbook"
+    if lib.exists():
+        shutil.rmtree(lib)
+    for sub in ("lib", "templates", "covers"):
+        shutil.copytree(HERE / sub, lib / sub)
+    cover = cfg["design"]["cover"]
+    if not (HERE / "covers" / f"{cover}.typ").exists():
+        die(f"unknown cover {cover!r}")
+    return bd
+
+
+def typst_args(root):
+    args = ["--root", str(root)]
+    if (root / "fonts").is_dir():
+        args += ["--font-path", str(root / "fonts")]
+    return args
+
+
+def main_typ(cfg):
+    tpl, cover = cfg["design"]["template"], cfg["design"]["cover"]
+    return f"""// generated by vbook: do not edit
+#import "/build/.vbook/templates/{tpl}.typ": *
+#import "/build/.vbook/covers/{cover}.typ" as cover
+#import "/build/meta.typ": meta
+#show: book.with(meta)
+#cover.front(meta)
+#frontispiece(meta)
+#title-page(meta)
+#credits-page(meta)
+#contents(meta)
+#include "/build/body.typ"
+#blank-pages(meta.end-blanks)
+#cover.back(meta)
+"""
+
+
+def build(root, quiet=False):
+    cfg = load(root)
+    md, fs = assemble(root, cfg)
+    bd = stage(root, cfg)
+    (bd / "body.md").write_text(md, encoding="utf-8")
+    s = cfg["sources"]
+    cmd = ["pandoc", str(bd / "body.md"), "-f", "markdown+raw_attribute+footnotes+pipe_tables",
+           "-t", "typst", "--wrap=preserve", "--lua-filter", str(bd / ".vbook/lib/vbook.lua"),
+           "-M", f"vbook-root={root}", "-M", f"vbook-dpi={cfg['design']['figure-dpi']}",
+           "-M", f"vbook-textwidth={textwidth_mm(cfg['_page']):.1f}",
+           "-M", f"vbook-parse-headings={'true' if s['parse-headings'] else 'false'}",
+           "-M", f"vbook-shift={int(s['shift-headings'])}",
+           "-M", f"vbook-overlays={root / s['overlays']}", "-o", str(bd / "body.typ")]
+    if s["bibliography"]:
+        cmd += ["--citeproc", "--bibliography", str(root / s["bibliography"])]
+        if s["csl"]:
+            cmd += ["--csl", str(root / s["csl"])]
+    run(cmd)
+    body = (bd / "body.typ").read_text(encoding="utf-8")
+    tpl = cfg["design"]["template"]
+    (bd / "body.typ").write_text(f'#import "/build/.vbook/templates/{tpl}.typ": *\n' + body, encoding="utf-8")
+    (bd / "meta.typ").write_text(meta_typ(root, cfg), encoding="utf-8")
+    (bd / "main.typ").write_text(main_typ(cfg), encoding="utf-8")
+    out = root / cfg["book"]["output"]
+    out.parent.mkdir(parents=True, exist_ok=True)
+    r = run(["typst", "compile", *typst_args(root), str(bd / "main.typ"), str(out)])
+    if r.stderr.strip():
+        sys.stderr.write(r.stderr)
+    if not quiet:
+        print(f"built {out.relative_to(root)} from {len(fs)} files")
+    return cfg, out
+
+
+# ---- checks
+
+def pdffonts(pdf, page=None):
+    cmd = ["pdffonts"] + (["-f", str(page), "-l", str(page)] if page else []) + [str(pdf)]
+    lines = run(cmd).stdout.splitlines()[2:]
+    return [l.split()[0].split("+")[-1] for l in lines if l.strip()]
+
+
+def count(root, selector):
+    r = run(["typst", "eval", *typst_args(root), f"query({selector}).len()", "--in", str(root / "build/main.typ")])
+    return int(r.stdout.strip())
+
+
+def pages(pdf):
+    m = re.search(r"^Pages:\s+(\d+)", run(["pdfinfo", str(pdf)]).stdout, re.M)
+    return int(m.group(1)) if m else 0
+
+
+def cmd_check(root):
+    cfg, out = build(root)
+    md, _ = assemble(root, cfg)
+    src_notes = len(re.findall(r"^\[\^[^\]]+\]:", md, re.M))
+    src_figs = len(re.findall(r"^!\[[^\]]*\]\([^)]+\)", md, re.M))
+    notes = count(root, "footnote")
+    figs = count(root, "figure.where(kind: image)")
+    missing = [f for f in set(pdffonts(out)) if "LastResort" in f]
+    print(f"pages    {pages(out)}")
+    print(f"notes    {notes} set, {src_notes} defined in the sources" + ("" if notes >= src_notes else "  << notes lost"))
+    print(f"figures  {figs} set, {src_figs} in the sources" + ("" if figs == src_figs else "  << check figures"))
+    print(f"glyphs   " + ("no missing glyphs" if not missing else "MISSING GLYPHS: run vbook sweep"))
+    return 1 if missing or notes < src_notes or figs != src_figs else 0
+
+
+ALIASES = {"hiraginominchopron": "hiraminpron", "hiraginominchopro": "hiraminpro", "hiraginosans": "hiraginosans",
+           "applesymbols": "applesymbols", "stixtwotext": "stixtwotext", "stixtwomath": "stixtwomath"}
+
+
+def cmd_sweep(root):
+    cfg = load(root)
+    md, _ = assemble(root, cfg)
+    text = md + json.dumps(cfg, ensure_ascii=False)
+    chars = sorted({c for c in text if ord(c) > 127 and unicodedata.category(c)[0] not in "CZ"})
+    groups, cur, key = [], [], None
+    for c in chars:
+        k = ord(c) >> 7
+        if cur and (k != key or len(cur) >= 32):
+            groups.append(cur); cur = []
+        cur.append(c); key = k
+    if cur:
+        groups.append(cur)
+    bd = stage(root, cfg)
+    (bd / "meta.typ").write_text(meta_typ(root, cfg), encoding="utf-8")
+    tpl = cfg["design"]["template"]
+    pages_src = []
+    for g in groups:
+        label = f"U+{ord(g[0]):04X} {unicodedata.name(g[0], '?').title()}"
+        cells = ", ".join(tystr(c) for c in g)
+        pages_src.append(f"#page[#text(7pt, font: \"STIX Two Text\")[{label}]\n\n"
+                         f"#grid(columns: 8, gutter: 6pt, ..({cells},).map(c => text(16pt, c)))]")
+    (bd / "sweep.typ").write_text(
+        f'#import "/build/.vbook/templates/{tpl}.typ": *\n#import "/build/meta.typ": meta\n'
+        f'#show: book.with(meta)\n#set page(header: none, footer: none)\n' + "\n".join(pages_src), encoding="utf-8")
+    pdf = bd / "sweep.pdf"
+    run(["typst", "compile", *typst_args(root), str(bd / "sweep.typ"), str(pdf)])
+    stack = [re.sub(r"\W", "", f).lower() for f in cfg["_fonts"]["text"]] + ["stixtwotext"]
+    stack = [ALIASES.get(s, s) for s in stack]
+    bad = 0
+    print(f"{len(chars)} distinct non-ASCII characters on {len(groups)} pages")
+    for i, g in enumerate(groups, 1):
+        used = set(pdffonts(pdf, i))
+        missing = [f for f in used if "LastResort" in f]
+        outside = [f for f in used if f not in missing and not any(re.sub(r"\W", "", f).lower().startswith(s[:10]) for s in stack)]
+        if missing or outside:
+            bad += 1
+            flag = "MISSING" if missing else "fallback"
+            print(f"  {flag:8} {''.join(g)}  fonts: {', '.join(sorted(used))}")
+    print("clean" if not bad else f"{bad} page(s) need attention: add a font to design.fonts.text")
+    return 1 if bad else 0
+
+
+def cmd_proof(root, sel):
+    cfg, out = build(root, quiet=True)
+    bd = root / "build" / "proof"
+    if bd.exists():
+        shutil.rmtree(bd)
+    bd.mkdir(parents=True)
+    args = ["typst", "compile", *typst_args(root), "--format", "png", "--ppi", "36"]
+    if sel:
+        args += ["--pages", sel]
+    run(args + [str(root / "build/main.typ"), str(bd / "p-{0p}.png")])
+    imgs = sorted(bd.glob("p-*.png"))
+    cells = ", ".join(f'box(stroke: 0.4pt + luma(150), image("/build/proof/{p.name}"))' for p in imgs)
+    (bd / "sheet.typ").write_text(
+        f"#set page(width: 1600pt, height: auto, margin: 12pt, fill: luma(225))\n"
+        f"#grid(columns: 10, gutter: 8pt, {cells})\n", encoding="utf-8")
+    run(["typst", "compile", "--root", str(root), "--format", "png", "--ppi", "72",
+         str(bd / "sheet.typ"), str(root / "build/proof.png")])
+    print(f"build/proof.png: {len(imgs)} pages")
+
+
+def cmd_fonts(root):
+    cfg = load(root) if (root / "book.toml").exists() else None
+    have = set(run(["typst", "fonts", *(["--font-path", str(root / "fonts")] if (root / "fonts").is_dir() else [])]).stdout.splitlines())
+    stacks = cfg["_fonts"] if cfg else {k: v for k, v in TEMPLATE_DEFAULTS["classic"].items() if k in ("text", "mono")}
+    for k, stack in stacks.items():
+        print(k)
+        for f in stack:
+            print(f"  {'ok     ' if f in have else 'MISSING'} {f}")
+
+
+def cmd_new(dest):
+    if dest.exists() and any(dest.iterdir()):
+        die(f"{dest} exists and is not empty")
+    shutil.copytree(HERE / "starter", dest, dirs_exist_ok=True)
+    print(f"started {dest}; edit book.toml, then: vbook build {dest}")
+
+
+def main():
+    ap = argparse.ArgumentParser(prog="vbook", description=__doc__.split("\n")[0])
+    ap.add_argument("command", choices=["new", "build", "check", "sweep", "proof", "fonts"])
+    ap.add_argument("dir", nargs="?", default=".")
+    ap.add_argument("--pages", help="for proof: pages to include, as typst --pages takes them (e.g. 1-12,40)")
+    a = ap.parse_args()
+    root = Path(a.dir).resolve()
+    if a.command == "new":
+        cmd_new(root)
+    elif a.command == "build":
+        build(root)
+    elif a.command == "check":
+        sys.exit(cmd_check(root))
+    elif a.command == "sweep":
+        sys.exit(cmd_sweep(root))
+    elif a.command == "proof":
+        cmd_proof(root, a.pages)
+    elif a.command == "fonts":
+        cmd_fonts(root)
+
+
+if __name__ == "__main__":
+    main()
