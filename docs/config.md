@@ -11,7 +11,7 @@ Every key, with its default. Strings marked *Markdown* may use emphasis and line
 | `author` | none | *Markdown.* Set in spaced capitals above the title |
 | `original-title` | none | The title in the source language |
 | `running-title` | `title` | Running head on versos |
-| `credit` | none | *Markdown.* Title page and covers, e.g. "A Vector Translation Project by …" |
+| `credit` | none | *Markdown.* Title page and covers, e.g. "Vector translated by …" |
 | `affiliation` | none | Back cover, under the credit |
 | `credits` | none | *Markdown, paragraphs.* About this edition, at the foot of the imprint page: edition translated, library and identifier, image credits, conventions |
 | `lang`, `region` | `"en"`, `"gb"` | Hyphenation and quotation marks |
@@ -21,10 +21,12 @@ Every key, with its default. Strings marked *Markdown* may use emphasis and line
 
 | Key | Default | |
 |---|---|---|
-| `template` | `"classic"` | Page design: `classic`, `modern`, `kintsugi` or `wildcard` (see Templates below) |
-| `cover` | the template's | `frame` (ruled frame with vertical text, after the 1948 Iwanami title page), `plain`, or `field` (a generated field with the title stacked over it; the wildcard's default) |
+| `template` | `"classic"` | Page design: `classic`, `modern`, `kintsugi`, `organic` or `vectors` (see Templates below) |
+| `cover` | the template's | `frame` (ruled frame with vertical text, after the 1948 Iwanami title page), `plain`, `field` (a generated field with the title stacked over it; the organic design's default), or `vectors` (generated vector imagery with the title set large over it; the vectors design's default) |
 | `field-palette` | `"mint-pink"` | Colours for generated fields: `mint-pink`, `acid`, `sand-sky`, `coral`, `electric`, or `mono` (black and white only). Each chapter's field takes the next colour in turn |
 | `field-colours` | the palette's | Your own list of colours, e.g. `["#bfe6d4", "#f4c4d3"]`, in place of a palette |
+| `vector-palette` | `"electric"` | Colours for the vectors design's imagery: `electric`, `night`, `blueprint`, `garden` or `spectrum`. Each sets a ground, an ink and three or four colours |
+| `vector-colours`, `vector-ground`, `vector-ink` | the palette's | Your own colours (a list), ground or ink, in place of the palette's |
 | `field-ink` | `"#0d0d0d"` | Colour of the fields' solid regions, and of the field cover's back; its text turns white or black to read on it |
 | `page` | the template's | Table of `width`, `height`, `inside`, `outside`, `top`, `bottom`, `size` (body type size) |
 | `fonts.text` | the template's | Font stack for the text, in order of preference |
@@ -42,14 +44,17 @@ The three designs offered for the Kuki book. `vbook samples` builds a book in ea
 |---|---|---|---|---|
 | `classic` | A, Classic scholarly (chosen for Kuki) | EB Garamond; centred small-capital headings; source pages in the outer margin; 28% note rule | 156 × 234 mm; inside 22, outside 26, top 22, bottom 24 mm | EB Garamond 12, Gentium Book Plus, Hiragino Mincho ProN, Noto Serif JP, STIX Two Text, STIX Two Math, Apple Symbols |
 | `modern` | B, Modern academic | Source Serif 4 text; Source Sans 3 semibold headings in navy, left-aligned; source pages inline as small grey `[N]`; full-width navy note rule | 156 × 234 mm; inside 22, outside 24, top 20, bottom 22 mm | Source Serif 4, Gentium Book Plus, Hiragino Mincho ProN, Noto Serif JP, STIX Two Text, STIX Two Math, Apple Symbols |
-| `wildcard` | none: a fourth design, after contemporary theory paperbacks | Fira Sans Condensed text; chapter titles in huge Archivo capitals, stacked and broken across lines; a generated field page before every chapter (more where a chapter's recto start leaves blank pages); a huge Contents; the field cover and a back cover in the field ink | 130 × 190 mm; inside 14, outside 16, top 15, bottom 17 mm | Fira Sans (Condensed), Gentium Book Plus, Hiragino Kaku Gothic ProN, STIX Two Text, STIX Two Math, Apple Symbols |
+| `organic` | none: a fourth design, after contemporary theory paperbacks; formerly `wildcard` | Fira Sans Condensed text; chapter titles in huge Archivo capitals, stacked and broken across lines; a generated field page before every chapter (more where a chapter's recto start leaves blank pages); a huge Contents; the field cover and a back cover in the field ink | 130 × 190 mm; inside 14, outside 16, top 15, bottom 17 mm | Fira Sans (Condensed), Gentium Book Plus, Hiragino Kaku Gothic ProN, STIX Two Text, STIX Two Math, Apple Symbols |
+| `vectors` | none: a fifth design, drawn from vector spaces | IBM Plex Serif text; Bricolage Grotesque headings, chapter titles set large over a band of generated vector imagery; IBM Plex Mono for running heads, folios and source pages; a full generated page before every chapter (streamlines, arrow fields, tensor glyphs, warped grids, point clouds with basis vectors), every other one inverted; a generated cover | 140 × 216 mm; inside 16, outside 20, top 18, bottom 20 mm | IBM Plex Serif, Gentium Book Plus, Hiragino Mincho ProN, Noto Serif JP, STIX Two Text, STIX Two Math, Apple Symbols |
 | `kintsugi` | C, Kintsugi | Crimson Pro and Shippori Mincho; centred gold headings; section numbers as kanji (一, 二, …); gold hairline under the running head and above the notes; figures between gold rules; source pages in gold in the margin | as `modern` | Crimson Pro, Gentium Book Plus, Shippori Mincho, Noto Serif JP, STIX Two Text, STIX Two Math, Apple Symbols |
 
-Classic, modern and kintsugi set 10.5 pt body type, wildcard 9.4 pt; the mono stack is Menlo, DejaVu Sans Mono and the template's Mincho. Kintsugi turns a section heading that begins with a number and a full stop (`## 3. The Three Modes`) into its kanji numeral.
+Classic, modern and kintsugi set 10.5 pt body type, organic 9.4 pt, vectors 9.6 pt; the mono stack is Menlo, DejaVu Sans Mono and the template's Mincho. Kintsugi turns a section heading that begins with a number and a full stop (`## 3. The Three Modes`) into its kanji numeral.
 
-Fonts not on the system are open fonts available from Google Fonts or as Homebrew casks (`font-source-serif-4`, `font-source-sans-3`, `font-crimson-pro`, `font-shippori-mincho`, `font-fira-sans-condensed`, `font-archivo-black`).
+Fonts not on the system are open fonts available from Google Fonts or as Homebrew casks (`font-source-serif-4`, `font-source-sans-3`, `font-crimson-pro`, `font-shippori-mincho`, `font-fira-sans-condensed`, `font-archivo-black`, `font-bricolage-grotesque`, `font-ibm-plex-serif`, `font-ibm-plex-mono`).
 
-The wildcard's fields are drawn by `lib/fields.py` at build time: a smooth noise surface, seeded by the book's title and the chapter's position, cut at three levels into colour, a dotted contour, and solid ink with white stipple. The same book always gets the same fields. On the field cover, the ink is kept out of the zone behind the title, and a dark colour too, so that the title never stands on ink. Typst sets the variable Source Serif 4 at its default optical size (20 pt); its text is a little more open than the 10.5 pt optical size a browser would choose.
+The organic design's fields are drawn by `lib/fields.py` at build time: a smooth noise surface, seeded by the book's title and the chapter's position, cut at three levels into colour, a dotted contour, and solid ink with white stipple. The same book always gets the same fields. On the field cover, the ink is kept out of the zone behind the title, and a dark colour too, so that the title never stands on ink.
+
+The vectors design's imagery is drawn by `lib/vectorfields.py`: a flow field per page (the curl of a noise stream function, with a few vortices and sources), from which it draws two or three layers: streamlines, an arrow field, tensor glyphs (ellipses along the flow, long where it is fast, round where it rotates), a coordinate grid carried along the flow, and point clouds with an origin and labelled basis vectors. Titles over imagery carry a halo in the ground colour, and their colour follows the ground's lightness. Typst sets the variable Source Serif 4 at its default optical size (20 pt); its text is a little more open than the 10.5 pt optical size a browser would choose.
 
 Each character is set in the first font of the stack that has it. Put the Latin face first, then a face with full diacritics and Greek, then the CJK face, then symbols. Run `vbook sweep` after any change to the stack or the text's character set.
 
@@ -95,7 +100,7 @@ The imprint page, on the back of the title page. The head of the page reads, fro
 | `moral-rights` | *Markdown.* The assertion of the author's or translator's right to be identified |
 | `licence` | *Markdown.* E.g. `"This work is licensed under a [Creative Commons Attribution 4.0 International Licence](https://creativecommons.org/licenses/by/4.0/) (CC BY 4.0)."` |
 | `third-party` | *Markdown.* Material outside the licence, and its credits |
-| `ai` | *Markdown.* AI disclosure. For a vector translation in the Vector Humanities series: `"This is a vector translation."` (the Translator's Note describes the method) |
+| `ai` | *Markdown.* AI disclosure. For a vector translation in the Vector Humanities series: `"This book was vector translated."` (the Translator's Note describes the method) |
 | `catalogue` | List of *Markdown* lines: British Library and Library of Congress cataloguing statements, as the libraries supply them |
 | `isbn` | One ISBN as a string, or one per format: `{ pdf = "…", paperback = "…" }`. On the back cover below the panel: the print ISBN if there is one, otherwise the first |
 | `doi` | Printed as a link, e.g. `"10.5281/zenodo.1234567"` |

@@ -1,4 +1,4 @@
-// Wildcard: a striking design in the manner of contemporary theory paperbacks.
+// Organic: a striking design in the manner of contemporary theory paperbacks.
 // 130 × 190 mm; Fira Sans Condensed text; chapter titles in huge stacked Archivo capitals, broken across
 // lines; a generated field page (black, colour and stipple, drawn from the book) before every chapter;
 // a huge Contents.

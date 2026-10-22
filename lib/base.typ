@@ -26,6 +26,9 @@
   figure-rule: none,
   // contents: entry size and weight, dot leaders or not
   toc: (size: 1em, weight: "regular", leaders: true, gap: 0.55em),
+  // chapter openings over a band of generated imagery (the vectors design): band height, or none;
+  // head-height fixes the space the opening's number, title and original title take
+  band: none, head-height: none,
   // field pages: "none", or "always" (every chapter is preceded by at least one generated field page;
   // any blank page before a chapter opening also takes one)
   interludes: "none",
@@ -79,6 +82,8 @@
 
 #let vb-title-note = state("vb-title-note", none)
 
+#let vb-ground = state("vb-ground", (ground: white, on: black))
+
 #let base-chapter(st, title, num: none, orig: none, run: none, note: none) = {
   if st.interludes != "none" {
     [#metadata("vb-pre")<vb-pre>]
@@ -88,19 +93,30 @@
   pagebreak(to: "odd", weak: true)
   v(st.chapter-sink)
   let al = st.h1.align
+  let banded = st.band != none
+  let head = {
   if num != none {
     let n = st.num
     let nf = if n.at("font", default: none) != none { (font: n.font) } else { (:) }
+    let pre = n.at("prefix", default: none)
     align(al, text(n.size, tracking: n.tracking, fill: n.fill, weight: n.at("weight", default: "regular"), ..nf,
-      if n.case == "smallcaps" { smallcaps(lower(num)) } else { cased(n.case, num) }))
-    v(2mm)
+      {
+        let t = [#if pre != none { pre }#if n.case == "smallcaps" { smallcaps(lower(num)) } else { cased(n.case, num) }]
+        if banded { context { let g = vb-ground.get(); haloed(t, g.ground, g.on, halo: 2pt) } } else { t }
+      }))
+    v(st.at("num-gap", default: 2mm))
   }
   context if vb-style.get().at("notes-reset", default: true) { counter(footnote).update(0) }
   vb-run.update(if run != none { run } else { title })
   vb-title-note.update(note)
   heading(level: 1, supplement: if num != none { num } else { [] }, title)
   vb-title-note.update(none)
-  if orig != none { align(al, text(st.orig.size, fill: st.orig.fill, orig)) }
+  if orig != none {
+    let o = text(st.orig.size, orig)
+    align(al, if banded { context { let g = vb-ground.get(); haloed(o, g.ground, g.on, halo: 2pt) } } else { text(fill: st.orig.fill, o) })
+  }
+  }
+  if st.head-height != none { block(height: st.head-height, width: 100%, head) } else { head }
   v(st.chapter-gap)
 }
 
@@ -108,6 +124,7 @@
   let pg = meta.page
   let fonts = meta.fonts.text
   vb-geom.update((width: pg.width, inside: pg.inside, outside: pg.outside))
+  vb-ground.update((ground: meta.field.ground, on: meta.field.on-ground))
   vb-style.update(s => s + (notes-reset: meta.notes-reset, gloss-font: (fonts.at(0), "Gentium Book Plus"), marker: st.marker,
     marker-fill: st.marker-fill, marker-font: st.marker-font, figure-rule: st.figure-rule))
 
@@ -124,23 +141,38 @@
     header: base-runhead(st, meta), header-ascent: 40%,
     footer: context {
       if st.interludes != "none" and interlude-at(here().page()) != none { return }
-      if vb-folio.get() { align(center, text(st.folio.size, fill: st.folio.fill, counter(page).display())) }
+      let ff = if st.folio.at("font", default: none) != none { (font: st.folio.font) } else { (:) }
+      if vb-folio.get() { align(center, text(st.folio.size, fill: st.folio.fill, ..ff, counter(page).display())) }
     },
-    background: if st.interludes != "none" { context {
-      let f = interlude-at(here().page())
+    background: if st.interludes != "none" or st.band != none { context {
+      let p = here().page()
+      let f = if st.interludes != "none" { interlude-at(p) } else { none }
       if f != none {
         let (i, k) = f
         image("/build/fields/field-" + str(i) + "-" + str(calc.min(k, 3)) + ".svg", width: pg.width, height: pg.height, fit: "cover")
+      } else if st.band != none {
+        let opens = query(heading.where(level: 1, outlined: true))
+        let i = opens.position(h => h.location().page() == p)
+        if i != none { place(top + left, image("/build/fields/band-" + str(i) + ".svg", width: pg.width, height: st.band, fit: "cover")) }
       }
     } })
 
   show heading.where(level: 1): it => block(width: 100%, above: 0pt, below: 4mm, {
     set par(leading: st.h1.at("leading", default: 0.65em))
     set text(hyphenate: st.h1.at("hyphenate", default: false))
-    align(st.h1.align, head-text(st, st.h1, it.body) + context {
+    let note = context {
       let n = vb-title-note.get()
       if n != none { footnote(n) }
-    })
+    }
+    if st.h1.at("display", default: false) {
+      // over the opening's band the halo is the band's ground; elsewhere (Contents) the page's
+      let (g, on) = if it.outlined and st.band != none { (meta.field.ground, meta.field.on-ground) } else { (white, st.head-colour) }
+      display-title(to-string(it.body), g, on, size: st.h1.size, font: st.h1.at("font", default: st.head-font),
+        weight: st.h1.at("weight", default: 800), leading: st.h1.at("leading", default: 0.08em))
+      note
+    } else {
+      align(st.h1.align, head-text(st, st.h1, it.body) + note)
+    }
   })
   show heading.where(level: 2): it => block(width: 100%, above: 1.4em, below: 0.9em, sticky: true, {
     show regex(if st.section-kanji { "^\d+\.\s+" } else { "\u{E000}\u{E001}" }): m => {

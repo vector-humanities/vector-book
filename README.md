@@ -6,11 +6,11 @@
 
 ---
 
-Vector Book typesets a book from Markdown section files. A short `book.toml` describes the book; `vbook build` assembles the sections, passes them through Pandoc with a Lua filter, and sets them in Typst. Its first design was made for the vector translation of Kuki Shūzō's 偶然性の問題 (*The Problem of Contingency*, 1935): Royal octavo, EB Garamond, centred small-capital headings, and the source edition's page numbers in the outer margin. Four designs are available, and every book can be set in all of them with one command.
+Vector Book typesets a book from Markdown section files. A short `book.toml` describes the book; `vbook build` assembles the sections, passes them through Pandoc with a Lua filter, and sets them in Typst. Its first design was made for the vector translation of Kuki Shūzō's 偶然性の問題 (*The Problem of Contingency*, 1935): Royal octavo, EB Garamond, centred small-capital headings, and the source edition's page numbers in the outer margin. Five designs are available, and every book can be set in all of them with one command.
 
-<p align="center"><img src="docs/img/covers.png" alt="Covers: the specimen in the classic, modern, kintsugi and wildcard designs, and the Kuki book with its frame cover and its field cover" width="100%"></p>
+<p align="center"><img src="docs/img/covers.png" alt="Covers: the specimen in the classic, modern, kintsugi, organic and vectors designs, and the Kuki book with its frame, field and vector covers" width="100%"></p>
 
-## Four designs
+## Five designs
 
 **Classic.** The design chosen for Kuki. EB Garamond at 10.5 pt on a 156 × 234 mm page; centred small-capital headings; the printed source's page numbers set small in the outer margin, on the baseline of the line where each page begins; notes restarting with each chapter under a short rule.
 
@@ -27,15 +27,25 @@ Vector Book typesets a book from Markdown section files. A short `book.toml` des
 <p align="center"><img src="docs/img/spread-kintsugi.png" alt="Kintsugi: the end of chapter 1 and the opening of chapter 2, the figure between gold rules" width="100%"></p>
 <p align="center"><img src="docs/img/opening-kintsugi.png" alt="Kintsugi: the opening of chapter 1" width="100%"></p>
 
-**Wildcard.** A 130 × 190 mm paperback in the manner of contemporary theory publishing. Fira Sans Condensed for the text; chapter titles in huge Archivo capitals, stacked and broken across lines; before every chapter, a field page generated from the book itself, regions of black, colour and white stipple drawn from a noise surface seeded by the book's title, so that no two books and no two chapters share a field; a field cover; a huge Contents; a black back cover.
+**Organic.** A 130 × 190 mm paperback in the manner of contemporary theory publishing. Fira Sans Condensed for the text; chapter titles in huge Archivo capitals, stacked and broken across lines; before every chapter, a field page generated from the book itself, regions of black, colour and white stipple drawn from a noise surface seeded by the book's title, so that no two books and no two chapters share a field; a field cover; a huge Contents; a black back cover.
 
-<p align="center"><img src="docs/img/spread-wildcard.png" alt="Wildcard: a generated field page facing the opening of chapter 2, set in huge stacked capitals" width="100%"></p>
-<p align="center"><img src="docs/img/opening-wildcard.png" alt="Wildcard: the opening of chapter 1, its title broken across four lines" width="100%"></p>
-<p align="center"><img src="docs/img/wildcard-pages.png" alt="Wildcard: title page, Contents and black back cover" width="100%"></p>
+<p align="center"><img src="docs/img/spread-organic.png" alt="Organic: a generated field page facing the opening of chapter 2, set in huge stacked capitals" width="100%"></p>
+<p align="center"><img src="docs/img/opening-organic.png" alt="Organic: the opening of chapter 1, its title broken across four lines" width="100%"></p>
+<p align="center"><img src="docs/img/organic-pages.png" alt="Organic: title page, Contents and black back cover" width="100%"></p>
 
-The wildcard's colours are chosen in `book.toml`: six palettes, or your own list, and the ink of the solid regions. On the cover the ink opens around the title, so the title never stands on black.
+The organic design's colours are chosen in `book.toml`: six palettes, or your own list, and the ink of the solid regions. On the cover the ink opens around the title, so the title never stands on black.
 
-<p align="center"><img src="docs/img/palettes.png" alt="The wildcard cover and a field page in six palettes: mint and pink, acid, sand and sky, coral, electric with blue ink, and black and white" width="100%"></p>
+<p align="center"><img src="docs/img/palettes.png" alt="The organic cover and a field page in six palettes: mint and pink, acid, sand and sky, coral, electric with blue ink, and black and white" width="100%"></p>
+
+**Vectors.** A 140 × 216 mm book drawn from vector spaces. IBM Plex Serif for the text, Bricolage Grotesque for headings, IBM Plex Mono for running heads, labels and source pages. Every chapter opens under a band of generated imagery with its title set large over it, and before every chapter stands a full page of it: streamlines, arrow fields, tensor glyphs drawn along the flow, a coordinate grid bent by the flow into a manifold, point clouds with labelled basis vectors. All of it comes from one flow field per page, seeded by the book's title and the chapter's place in it. Every other page inverts the palette. Type over imagery carries a halo in the ground colour, so it reads on any palette.
+
+<p align="center"><img src="docs/img/spread-vectors.png" alt="Vectors: a generated page of vector imagery facing the opening of chapter 2, its title set large over a band of streamlines" width="100%"></p>
+<p align="center"><img src="docs/img/opening-vectors.png" alt="Vectors: the opening of chapter 1 under its band" width="100%"></p>
+<p align="center"><img src="docs/img/vectors-pages.png" alt="Vectors: title page, Contents and back cover" width="100%"></p>
+
+Five palettes (`vector-palette`: electric, night, blueprint, garden, spectrum), or your own ground, ink and colours:
+
+<p align="center"><img src="docs/img/palettes-vectors.png" alt="The vectors cover and a chapter opening in five palettes" width="100%"></p>
 
 ## Front matter
 
@@ -83,7 +93,7 @@ The specimen in [`examples/specimen/`](examples/specimen/) shows every conventio
 | | |
 |---|---|
 | [`docs/conventions.md`](docs/conventions.md) | What the Markdown says: chapters, page markers, notes, insertions, verse, figures and overlays, schemes, breaks, tables, glossary |
-| [`docs/config.md`](docs/config.md) | Every key in `book.toml`, and the four templates |
+| [`docs/config.md`](docs/config.md) | Every key in `book.toml`, and the five templates |
 | [`docs/handover.md`](docs/handover.md) | How a finished vector translation passes to Vector Book: the book folder, the manifest, returns and checks, the book gate |
 | [`docs/practice.md`](docs/practice.md) | How to make a book, from what the Kuki book needed, with the faults met and how the tool handles them |
 | [`AGENTS.md`](AGENTS.md) | Instructions for agents working on this repository |
@@ -94,9 +104,9 @@ Vector Book is stage 7 of the Vector Translation method, and serves editions as 
 
 ```
 vbook                command
-lib/                 Pandoc Lua filter, shared Typst functions, the field generator
-templates/           page designs: classic, modern, kintsugi, wildcard
-covers/              frame, plain and field covers
+lib/                 Pandoc Lua filter, shared Typst functions, the field and vector generators
+templates/           page designs: classic, modern, kintsugi, organic, vectors
+covers/              frame, plain, field and vector covers
 starter/             the project vbook new copies
 examples/specimen/   a book that uses every convention
 docs/                documentation, gallery images, the site
@@ -105,6 +115,6 @@ brand/               the mark and its generator
 
 ## Status
 
-Alpha, October 2026. The full Kuki book builds in every design: 473 notes and 22 figures set, no missing glyphs (classic 242 pp., wildcard 284 pp.). To come: a facing-page layout for literal and readable versions, EPUB and HTML output, and open CJK fonts for builds away from macOS.
+Alpha, October 2026. The full Kuki book builds in every design: 473 notes and 22 figures set, no missing glyphs (classic 242 pp., organic 284 pp., vectors 300 pp.). To come: a facing-page layout for literal and readable versions, EPUB and HTML output, and open CJK fonts for builds away from macOS.
 
-Licence: GNU General Public License, version 3 or later.
+Created by David M. Berry. Licence: GNU General Public License, version 3 or later.

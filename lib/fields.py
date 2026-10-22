@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Generative fields for the wildcard template: organic regions of black, colour and stipple,
+"""Generative fields for the organic template: organic regions of black, colour and stipple,
 drawn as SVG from a smooth noise field seeded by a text (a chapter title, a book title).
 
 A field is the noise surface cut at three levels: the lowest region takes the colour, the highest

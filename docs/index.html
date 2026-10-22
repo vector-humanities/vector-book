@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Vector Book</title>
-<meta name="description" content="Vector Book: book design and typesetting for vector humanities editions and translations. Four designs, from Markdown through Pandoc and Typst.">
+<meta name="description" content="Vector Book: book design and typesetting for vector humanities editions and translations. Five designs, from Markdown through Pandoc and Typst.">
 <link rel="icon" href="site/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -128,7 +128,7 @@ footer ul { list-style: none; margin: 0; padding: 0; }
   <img src="site/mark.svg" alt="">
   <a class="name" href="#top">VECTOR BOOK</a>
   <nav aria-label="Sections">
-    <a href="#designs">Designs</a><a href="#wildcard">Wildcard</a><a href="#details">Details</a>
+    <a href="#designs">Designs</a><a href="#organic">Organic</a><a href="#vectors">Vectors</a><a href="#details">Details</a>
     <a href="#prelims">Front matter</a><a href="#flow">From translation to book</a><a href="#use">Use</a>
     <a href="https://github.com/vector-humanities/vector-book">GitHub</a>
   </nav>
@@ -139,7 +139,7 @@ footer ul { list-style: none; margin: 0; padding: 0; }
   <img class="field" src="site/hero-field.svg" alt="">
   <div class="inner">
     <h1>Vector<br>Book</h1>
-    <p class="tag"><span>Book design and typesetting for vector humanities editions and translations. Markdown in, through Pandoc and Typst, a printed book out, in four designs.</span></p>
+    <p class="tag"><span>Book design and typesetting for vector humanities editions and translations. Markdown in, through Pandoc and Typst, a printed book out, in five designs.</span></p>
     <div class="links">
       <a class="btn" href="https://github.com/vector-humanities/vector-book">Source on GitHub</a>
       <a class="btn alt" href="https://github.com/vector-humanities/vector-book/raw/main/examples/specimen/book/specimen.pdf">Specimen PDF</a>
@@ -152,19 +152,20 @@ footer ul { list-style: none; margin: 0; padding: 0; }
     <p class="kicker">Covers</p>
     <h2>One book, every design</h2>
     <p class="lede">A book is a folder of Markdown section files and a short <code>book.toml</code>. <code>vbook samples</code> sets the same book in every design, so the choice is made on the book's own pages. The first book was the vector translation of Kuki Shūzō's 偶然性の問題 (<i>The Problem of Contingency</i>, 1935), shown here with its frame cover after the 1948 Iwanami title page and with a field cover.</p>
-    <figure><img class="zoom" src="img/covers.png" alt="Covers: the specimen in classic, modern, kintsugi and wildcard, and the Kuki book with its frame cover and its field cover" loading="lazy"></figure>
+    <figure><img class="zoom" src="img/covers.png" alt="Covers: the specimen in classic, modern, kintsugi and organic, and the Kuki book with its frame cover and its field cover" loading="lazy"></figure>
   </div>
 </section>
 
 <section id="designs" class="ground">
   <div class="wide">
-    <p class="kicker">Four designs</p>
+    <p class="kicker">Five designs</p>
     <h2>Designs</h2>
     <div class="tabs" role="tablist" aria-label="Designs">
       <button class="tab" role="tab" aria-selected="true" aria-controls="d-classic" id="t-classic">Classic</button>
       <button class="tab" role="tab" aria-selected="false" aria-controls="d-modern" id="t-modern">Modern</button>
       <button class="tab" role="tab" aria-selected="false" aria-controls="d-kintsugi" id="t-kintsugi">Kintsugi</button>
-      <button class="tab" role="tab" aria-selected="false" aria-controls="d-wildcard" id="t-wildcard">Wildcard</button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="d-organic" id="t-organic">Organic</button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="d-vectors" id="t-vectors">Vectors</button>
     </div>
 
     <div class="design on" id="d-classic" role="tabpanel" aria-labelledby="t-classic">
@@ -206,7 +207,7 @@ footer ul { list-style: none; margin: 0; padding: 0; }
       </div>
     </div>
 
-    <div class="design" id="d-wildcard" role="tabpanel" aria-labelledby="t-wildcard">
+    <div class="design" id="d-organic" role="tabpanel" aria-labelledby="t-organic">
       <div class="spec">
         <div><b>Page</b>130 × 190 mm, a paperback</div>
         <div><b>Text</b>Fira Sans Condensed 9.4 pt</div>
@@ -214,20 +215,33 @@ footer ul { list-style: none; margin: 0; padding: 0; }
         <div><b>Fields</b>A generated field page before every chapter, drawn from the book</div>
       </div>
       <div class="shots">
-        <figure><img class="zoom" src="img/spread-wildcard.png" alt="Wildcard spread: a field page facing the opening of chapter 2" loading="lazy"><figcaption>A field facing the opening of chapter 2.</figcaption></figure>
-        <figure><img class="zoom" src="img/opening-wildcard.png" alt="Wildcard: the opening of chapter 1, its title broken across four lines" loading="lazy"><figcaption>Chapter 1: CONVEN-TIONS OF THE TEXT.</figcaption></figure>
+        <figure><img class="zoom" src="img/spread-organic.png" alt="Organic spread: a field page facing the opening of chapter 2" loading="lazy"><figcaption>A field facing the opening of chapter 2.</figcaption></figure>
+        <figure><img class="zoom" src="img/opening-organic.png" alt="Organic: the opening of chapter 1, its title broken across four lines" loading="lazy"><figcaption>Chapter 1: CONVEN-TIONS OF THE TEXT.</figcaption></figure>
       </div>
     </div>
+    <div class="design" id="d-vectors" role="tabpanel" aria-labelledby="t-vectors">
+      <div class="spec">
+        <div><b>Page</b>140 × 216 mm</div>
+        <div><b>Text</b>IBM Plex Serif 9.6 pt; IBM Plex Mono for running heads, folios and source pages</div>
+        <div><b>Headings</b>Bricolage Grotesque, set large over a band of generated imagery</div>
+        <div><b>Imagery</b>Streamlines, arrow fields, tensor glyphs, warped grids, point clouds with basis vectors</div>
+      </div>
+      <div class="shots">
+        <figure><img class="zoom" src="img/spread-vectors.png" alt="Vectors spread: a generated page facing the opening of chapter 2" loading="lazy"><figcaption>A generated page facing the opening of chapter 2, its title set over a band of streamlines and arrows.</figcaption></figure>
+        <figure><img class="zoom" src="img/opening-vectors.png" alt="Vectors: the opening of chapter 1" loading="lazy"><figcaption>Chapter 1, under its band.</figcaption></figure>
+      </div>
+    </div>
+
   </div>
 </section>
 
 <div class="band"><img src="site/band-field.svg" alt=""></div>
 
-<section id="wildcard">
+<section id="organic">
   <div class="wide">
-    <p class="kicker">The wildcard</p>
+    <p class="kicker">Organic</p>
     <h2>Fields drawn from the book</h2>
-    <p class="lede">Before every chapter the wildcard sets a field page: regions of solid ink with white stipple, a dotted contour, and colour, cut from a smooth noise surface seeded by the book's title and the chapter's place in it. The same book always draws the same fields, and no two books share one. On the cover the ink opens around the title, which Typst measures before the field is drawn, so the title never stands on black.</p>
+    <p class="lede">Before every chapter the organic design sets a field page: regions of solid ink with white stipple, a dotted contour, and colour, cut from a smooth noise surface seeded by the book's title and the chapter's place in it. The same book always draws the same fields, and no two books share one. On the cover the ink opens around the title, which Typst measures before the field is drawn, so the title never stands on black.</p>
     <div class="chips" aria-label="Palettes">
       <span class="chip"><i style="background:#bfe6d4"></i><i style="background:#f4c4d3"></i>mint-pink</span>
       <span class="chip"><i style="background:#dcf25c"></i><i style="background:#a9ecff"></i>acid</span>
@@ -236,9 +250,20 @@ footer ul { list-style: none; margin: 0; padding: 0; }
       <span class="chip"><i style="background:#b3b8ff"></i><i style="background:#ffc2b5"></i>electric</span>
       <span class="chip"><i style="background:#fff"></i>mono</span>
     </div>
-    <figure><img class="zoom" src="img/palettes.png" alt="The wildcard cover and a field page in six palettes" loading="lazy"><figcaption><code>field-palette</code> chooses the colours, <code>field-colours</code> sets your own, <code>field-ink</code> the solid regions: here black, and electric blue for the electric palette.</figcaption></figure>
+    <figure><img class="zoom" src="img/palettes.png" alt="The organic cover and a field page in six palettes" loading="lazy"><figcaption><code>field-palette</code> chooses the colours, <code>field-colours</code> sets your own, <code>field-ink</code> the solid regions: here black, and electric blue for the electric palette.</figcaption></figure>
     <div style="height:40px"></div>
-    <figure><img class="zoom" src="img/wildcard-pages.png" alt="Wildcard title page, Contents and back cover" loading="lazy"><figcaption>Title page, Contents and back cover, the back in the field ink with its text in white or black to read on it.</figcaption></figure>
+    <figure><img class="zoom" src="img/organic-pages.png" alt="Organic title page, Contents and back cover" loading="lazy"><figcaption>Title page, Contents and back cover, the back in the field ink with its text in white or black to read on it.</figcaption></figure>
+  </div>
+</section>
+
+<section id="vectors" class="ground">
+  <div class="wide">
+    <p class="kicker">Vectors</p>
+    <h2>Imagery drawn from vector spaces</h2>
+    <p class="lede">Each page of imagery is drawn from one flow field, the curl of a smooth noise surface with a few vortices and sources, seeded by the book's title and the chapter's place in it. From it come streamlines, an arrow field, tensor glyphs that lengthen where the flow is fast and round out where it rotates, a coordinate grid bent along the flow into a manifold, and point clouds with an origin and labelled basis vectors. Every other page inverts the palette. Titles over the imagery carry a halo in the ground colour, and their colour follows the ground's lightness, so they read on any palette.</p>
+    <figure><img class="zoom" src="img/palettes-vectors.png" alt="The vectors cover and a chapter opening in five palettes" loading="lazy"><figcaption><code>vector-palette</code>: electric, night, blueprint, garden, spectrum; or your own ground, ink and colours.</figcaption></figure>
+    <div style="height:40px"></div>
+    <figure><img class="zoom" src="img/vectors-pages.png" alt="Vectors title page, Contents and back cover" loading="lazy"><figcaption>Title page under its band, Contents, and the back cover with a band of streamlines.</figcaption></figure>
   </div>
 </section>
 
@@ -317,7 +342,7 @@ footer ul { list-style: none; margin: 0; padding: 0; }
 <footer>
   <img src="site/vh-mark.svg" alt="Vector Humanities">
   <div class="cols">
-    <div><h4>Vector Book</h4><ul><li>A Vector Humanities tool</li><li>Alpha, October 2026</li><li>GNU GPL, version 3 or later</li></ul></div>
+    <div><h4>Vector Book</h4><ul><li>Created by David M. Berry</li><li>A Vector Humanities tool</li><li>Alpha, October 2026</li><li>GNU GPL, version 3 or later</li></ul></div>
     <div><h4>Links</h4><ul><li><a href="https://github.com/vector-humanities/vector-book">Repository</a></li><li><a href="https://vector-humanities.github.io">Vector Humanities</a></li></ul></div>
   </div>
 </footer>
@@ -343,7 +368,8 @@ tabs.forEach((t, i) => {
     }
   });
 });
-if (location.hash === '#wildcard-design') show(document.getElementById('t-wildcard'));
+if (location.hash === '#organic-design') show(document.getElementById('t-organic'));
+if (location.hash === '#vectors-design') show(document.getElementById('t-vectors'));
 
 // lightbox
 const lb = document.getElementById('lb'), lbImg = lb.querySelector('img');

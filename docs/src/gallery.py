@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Render the gallery images in docs/img from the specimen built in every template.
 
-    python3 docs/src/gallery.py [--kuki PATH-TO-KUKI-PDF] [--kuki-wild PATH]
+    python3 docs/src/gallery.py [--kuki PATH-TO-KUKI-PDF] [--kuki-organic PATH]
 
 Run `./vbook samples examples/specimen` first. Needs pdftoppm and typst. Pages from the specimen only,
 except the Kuki covers, which carry no translation text.
@@ -16,7 +16,8 @@ HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent
 IMG = REPO / "docs" / "img"
 SAMPLES = REPO / "examples" / "specimen" / "build" / "samples"
-TEMPLATES = ["classic", "modern", "kintsugi", "wildcard"]
+TEMPLATES = ["classic", "modern", "kintsugi", "organic", "vectors"]
+VECTOR_PALETTES = ["electric", "night", "blueprint", "garden", "spectrum"]
 PALETTES = [("mint-pink", "#0d0d0d"), ("acid", "#0d0d0d"), ("sand-sky", "#0d0d0d"), ("coral", "#0d0d0d"),
             ("electric", "#1a1aff"), ("mono", "#0d0d0d")]
 
@@ -85,7 +86,8 @@ def row(images, out, tmp, width=60, labels=None):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--kuki", help="classic Kuki PDF (covers only)")
-    ap.add_argument("--kuki-wild", help="wildcard Kuki PDF (covers only)")
+    ap.add_argument("--kuki-organic", help="organic Kuki PDF (covers only)")
+    ap.add_argument("--kuki-vectors", help="vectors Kuki PDF (covers only)")
     a = ap.parse_args()
     IMG.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as t:
@@ -105,25 +107,27 @@ def main():
             labels.append(name)
         if a.kuki:
             covers.append(page_png(Path(a.kuki), 1, tmp / "kuki-cover.png", 200)); labels.append("classic: Kuki, frame cover")
-        if a.kuki_wild:
-            covers.append(page_png(Path(a.kuki_wild), 1, tmp / "kuki-wild-cover.png", 200)); labels.append("wildcard: Kuki, field cover")
+        if a.kuki_organic:
+            covers.append(page_png(Path(a.kuki_organic), 1, tmp / "kuki-organic-cover.png", 200)); labels.append("organic: Kuki, field cover")
+        if a.kuki_vectors:
+            covers.append(page_png(Path(a.kuki_vectors), 1, tmp / "kuki-vectors-cover.png", 200)); labels.append("vectors: Kuki")
         row(covers, IMG / "covers.png", tmp, width=52, labels=labels)
         pdf = SAMPLES / "classic.pdf"
         prelims = [page_png(pdf, p, tmp / f"pre-{p}.png", 220) for p in (3, 4, 5)]
         row(prelims, IMG / "prelims.png", tmp, width=72, labels=["title page", "imprint page", "contents"])
-        wpdf = SAMPLES / "wildcard.pdf"
+        wpdf = SAMPLES / "organic.pdf"
         wl = [page_png(wpdf, p, tmp / f"w-{p}.png", 220) for p in (3, 5)]
         last = pages_of(wpdf)
         wl.append(page_png(wpdf, last, tmp / "w-back.png", 220))
-        row(wl, IMG / "wildcard-pages.png", tmp, width=62, labels=["title page", "contents", "back cover"])
-        # the wildcard in every palette: cover above, first field page below
+        row(wl, IMG / "organic-pages.png", tmp, width=62, labels=["title page", "contents", "back cover"])
+        # the organic design in every palette: cover above, first field page below
         import shutil
         cells = []
         for pal, ink in PALETTES:
             d = tmp / f"pal-{pal}"
             shutil.copytree(REPO / "examples" / "specimen", d, ignore=shutil.ignore_patterns("build", "book"))
             toml = (d / "book.toml").read_text(encoding="utf-8")
-            toml = toml.replace('template = "classic"', f'template = "wildcard"\nfield-palette = "{pal}"\nfield-ink = "{ink}"')
+            toml = toml.replace('template = "classic"', f'template = "organic"\nfield-palette = "{pal}"\nfield-ink = "{ink}"')
             toml = toml.replace('cover = "frame"', 'cover = "field"')
             (d / "book.toml").write_text(toml, encoding="utf-8")
             run(str(REPO / "vbook"), "build", str(d))
@@ -136,6 +140,29 @@ def main():
         compose(f"""#set page(width: auto, height: auto, margin: 26pt, fill: {GROUND})
 #stack(dir: ltr, spacing: 12pt, {", ".join(cells)})
 """, IMG / "palettes.png", tmp)
+        # the vectors design in every palette: cover above, a chapter opening below
+        cells = []
+        for pal in VECTOR_PALETTES:
+            d = tmp / f"vpal-{pal}"
+            shutil.copytree(REPO / "examples" / "specimen", d, ignore=shutil.ignore_patterns("build", "book"))
+            toml = (d / "book.toml").read_text(encoding="utf-8")
+            toml = toml.replace('template = "classic"', f'template = "vectors"\nvector-palette = "{pal}"')
+            toml = toml.replace('cover = "frame"', 'cover = "vectors"')
+            (d / "book.toml").write_text(toml, encoding="utf-8")
+            run(str(REPO / "vbook"), "build", str(d))
+            bp = d / "book" / "specimen.pdf"
+            c = page_png(bp, 1, tmp / f"vpal-{pal}-c.png", 160)
+            o = page_png(bp, find(bp, ["Figures, Schemes"]), tmp / f"vpal-{pal}-o.png", 160)
+            cells.append(f'stack(spacing: 8pt, box(stroke: 0.6pt + luma(175), image("{c}", width: 50mm)), '
+                         f'box(stroke: 0.6pt + luma(175), image("{o}", width: 50mm)), '
+                         f'text(9pt, font: "Fira Sans", stretch: 75%, fill: luma(60), "{pal}"))')
+        compose(f"""#set page(width: auto, height: auto, margin: 26pt, fill: {GROUND})
+#stack(dir: ltr, spacing: 12pt, {", ".join(cells)})
+""", IMG / "palettes-vectors.png", tmp)
+        vpdf = SAMPLES / "vectors.pdf"
+        vl = [page_png(vpdf, p, tmp / f"v-{p}.png", 220) for p in (3, 5)]
+        vl.append(page_png(vpdf, pages_of(vpdf), tmp / "v-back.png", 220))
+        row(vl, IMG / "vectors-pages.png", tmp, width=62, labels=["title page", "contents", "back cover"])
         # details, at print resolution
         p = find(pdf, ["Conventions of the Text"])
         page_png(pdf, p, IMG / "detail-margin.png", 300, crop=(52, 168, 386, 128))

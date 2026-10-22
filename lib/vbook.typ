@@ -95,6 +95,40 @@
   block(above: 1.1em, below: 1.1em, width: 100%, align(center, text(tracking: 0.3em, mark)))
 }
 
+// Plain text of a piece of content, for designs that rearrange a title's words
+#let to-string(c) = {
+  if type(c) == str { c }
+  else if c.has("text") { c.text }
+  else if c.has("children") { c.children.map(to-string).join() }
+  else if c.has("body") { to-string(c.body) }
+  else { " " }
+}
+
+// Text over imagery: a halo in the ground colour cut out behind the letters, then the letters
+#let haloed(body, ground, fill, halo: 3.2pt) = box({
+  place(text(fill: ground, stroke: (paint: ground, thickness: halo, join: "round"), body))
+  text(fill: fill, body)
+})
+
+// A display title over imagery: set straight and large, sized down only as far as its longest word
+// needs to fit the measure, with a halo in the ground colour behind every line.
+#let display-title(title, ground, fill, size: 60pt, font: ("Bricolage Grotesque 96pt", "Space Grotesk"),
+                   weight: 800, leading: 0.08em, tracking: -0.02em, halo: none) = layout(region => {
+  let words = title.split(" ").filter(w => w.trim() != "")
+  let widest = calc.max(..words.map(w => measure(text(10pt, font: font, weight: weight, tracking: tracking, w)).width / 10pt))
+  let sz = calc.min(size, region.width * 0.97 / widest)
+  let body = {
+    set par(leading: leading, justify: false)
+    set text(sz, font: font, weight: weight, tracking: tracking, hyphenate: false)
+    title
+  }
+  let h = if halo == none { calc.max(2.5pt, sz * 0.075) } else { halo }
+  block(width: 100%, {
+    place(top + left, block(width: 100%, text(fill: ground, stroke: (paint: ground, thickness: h, join: "round"), body)))
+    text(fill: fill, body)
+  })
+})
+
 // A tracked line of capitals on a cover or title page; emphasis in it is set in small capitals, since tracked italic reads poorly beside tracked capitals
 #let tracked-line(size, body, tracking: 0.08em) = text(size, tracking: tracking, {
   show emph: it => smallcaps(it.body)

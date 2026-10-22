@@ -25,7 +25,7 @@ build/                 working files (written by Vector Book; ignore it in git)
 
 | Table | Written by | Holds |
 |---|---|---|
-| `[book]` | translation | Title, subtitle, author, original title, credit line ("A Vector Translation Project by …"), affiliation, and `credits`: the edition translated with its library and identifier, image credit, rights line, conventions note |
+| `[book]` | translation | Title, subtitle, author, original title, credit line ("Vector translated by …"), affiliation, and `credits`: the edition translated with its library and identifier, image credit, rights line, conventions note |
 | `[sources]` | translation | Order: `front`, `body`, `back` as globs (`text/readable/*.md`) or lists of files; `glossary`; `overlays` |
 | `[markers]` | translation | The page-marker pattern, and patterns to strip (image numbers) |
 | `[imprint]` | publisher (the series) | Publisher, series, edition, copyright and licence lines, cataloguing, ISBN and DOI; the imprint page |

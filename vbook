@@ -37,7 +37,8 @@ DEFAULTS = {
              "running-title": None, "credit": None, "affiliation": None, "credits": None,
              "lang": "en", "region": "gb", "output": "book/book.pdf", },
     "design": {"template": "classic", "cover": None, "field-palette": "mint-pink", "field-colours": None,
-               "field-ink": "#0d0d0d", "page": {}, "fonts": {},
+               "field-ink": "#0d0d0d", "vector-palette": "electric", "vector-colours": None,
+               "vector-ground": None, "vector-ink": None, "page": {}, "fonts": {},
                "no-hyphen": [], "end-blanks": 0, "figure-dpi": 300, "notes": "chapter"},
     "sources": {"front": [], "body": ["text/*.md"], "back": [], "glossary": None,
                 "glossary-columns": ["source", "reading", "english"],
@@ -70,12 +71,18 @@ TEMPLATE_DEFAULTS = {
                  "text": ["Crimson Pro", "Gentium Book Plus", "Shippori Mincho", "Noto Serif JP",
                           "STIX Two Text", "STIX Two Math", "Apple Symbols"],
                  "mono": ["Menlo", "DejaVu Sans Mono", "Shippori Mincho"]},
-    "wildcard": {"width": "130mm", "height": "190mm", "inside": "14mm", "outside": "16mm",
+    "organic": {"width": "130mm", "height": "190mm", "inside": "14mm", "outside": "16mm",
                  "top": "15mm", "bottom": "17mm", "size": "9.4pt",
                  "text": ["Fira Sans", "Gentium Book Plus", "Hiragino Kaku Gothic ProN",
                           "STIX Two Text", "STIX Two Math", "Apple Symbols"],
                  "mono": ["Menlo", "DejaVu Sans Mono", "Hiragino Kaku Gothic ProN"],
-                 "display": "Archivo", "cover": "field", "fields": True},
+                 "display": "Archivo", "cover": "field", "fields": "blobs"},
+    "vectors": {"width": "140mm", "height": "216mm", "inside": "16mm", "outside": "20mm",
+                "top": "18mm", "bottom": "20mm", "size": "9.6pt",
+                "text": ["IBM Plex Serif", "Gentium Book Plus", "Hiragino Mincho ProN", "Noto Serif JP",
+                         "STIX Two Text", "STIX Two Math", "Apple Symbols"],
+                "mono": ["IBM Plex Mono", "Menlo", "Hiragino Kaku Gothic ProN"],
+                "display": "Space Grotesk", "cover": "vectors", "fields": "vectors"},
 }
 
 
@@ -96,12 +103,16 @@ def load(root, template=None):
         die(f"no book.toml in {root}")
     with open(p, "rb") as f:
         raw = tomllib.load(f)
+    if template == "wildcard":
+        template = "organic"
     if template:
         # another template's sample: its own page and fonts, not this book's overrides
         raw.setdefault("design", {}).update(template=template, page={}, fonts={})
         if "cover" in TEMPLATE_DEFAULTS.get(template, {}):
             raw["design"]["cover"] = TEMPLATE_DEFAULTS[template]["cover"]
     cfg = merge(DEFAULTS, raw)
+    if cfg["design"]["template"] == "wildcard":     # the organic design's first name
+        cfg["design"]["template"] = "organic"
     tpl = cfg["design"]["template"]
     if tpl not in TEMPLATE_DEFAULTS:
         die(f"unknown template {tpl!r}; have {', '.join(TEMPLATE_DEFAULTS)}")
@@ -302,7 +313,9 @@ def field_typ(cfg):
     ink = cfg["design"]["field-ink"]
     colour(ink)
     on = "#ffffff" if luminance(ink) < 0.4 else "#0d0d0d"
-    return f'(ink: rgb("{ink}"), on-ink: rgb("{on}"))'
+    vp = vector_palette(cfg)
+    von = "#ffffff" if luminance(vp["ground"]) < 0.4 else "#141518"
+    return (f'(ink: rgb("{ink}"), on-ink: rgb("{on}"), ground: rgb("{vp["ground"]}"), on-ground: rgb("{von}"))')
 
 
 def meta_typ(root, cfg):
@@ -366,7 +379,7 @@ def stage(root, cfg):
     return bd
 
 
-# colours for the wildcard's fields: each chapter's field takes the next colour in turn
+# colours for the organic design's fields: each chapter's field takes the next colour in turn
 FIELD_PALETTES = {
     "mint-pink": ["#bfe6d4", "#f4c4d3"],
     "acid": ["#dcf25c", "#a9ecff"],
@@ -389,18 +402,26 @@ def field_colours(cfg):
     return cols
 
 
-def cover_title_mm(root, cfg, width_mm):
-    """Height in mm of the field cover's stacked title, measured by Typst with the cover's settings."""
+COVER_TITLES = {   # how each generated cover sets its title: font, size, weight, case, leading, side margin
+    "field": ('("Archivo", "Fira Sans")', "58pt", "regular", True, "0.06em", 10),
+    "vectors": ('("Space Grotesk", "Fira Sans")', "44pt", "bold", False, "0.18em", 12),
+}
+
+
+def cover_title_mm(root, cfg, width_mm, cover="field"):
+    """Height in mm of a generated cover's title, measured by Typst with the cover's settings."""
+    font, size, weight, caps, leading, margin = COVER_TITLES[cover]
     title = tystr(plain(cfg["book"]["title"]))
     lang = tystr(cfg["book"]["lang"])
     src = root / "build" / "measure.typ"
-    src.write_text(f"""#set page(width: {width_mm}mm, height: 400mm, margin: (x: 10mm))
+    body = f"upper({title})" if caps else title
+    src.write_text(f"""#set page(width: {width_mm}mm, height: 400mm, margin: (x: {margin}mm))
 #set text(lang: {lang})
 #context {{
-  let b = block(width: {width_mm - 20}mm, {{
-    set par(leading: 0.06em)
-    set text(hyphenate: true)
-    text(58pt, font: ("Archivo", "Fira Sans"), tracking: -0.02em, upper({title}))
+  let b = block(width: {width_mm - 2 * margin}mm, {{
+    set par(leading: {leading})
+    set text(hyphenate: {"true" if caps else "false"})
+    text({size}, font: {font}, weight: "{weight}", tracking: -0.02em, {body})
   }})
   [#metadata(measure(b).height.mm()) <vb-title-height>]
 }}
@@ -409,34 +430,65 @@ def cover_title_mm(root, cfg, width_mm):
     return float(r.stdout.strip())
 
 
+def vector_palette(cfg):
+    sys.path.insert(0, str(HERE / "lib"))
+    from vectorfields import PALETTES
+    d = cfg["design"]
+    if d["vector-palette"] not in PALETTES:
+        die(f"design.vector-palette {d['vector-palette']!r}: one of {', '.join(PALETTES)}")
+    pal = dict(PALETTES[d["vector-palette"]])
+    for key, cfgkey in (("colours", "vector-colours"), ("ground", "vector-ground"), ("ink", "vector-ink")):
+        if d[cfgkey]:
+            pal[key] = d[cfgkey]
+    for c in pal["colours"] + [pal["ground"], pal["ink"]]:
+        colour(c)
+    return pal
+
+
 def make_fields(root, cfg, md):
-    """Generated field pages and cover for the wildcard template and the field cover."""
+    """Generated pages: chapter fields for the organic and vectors templates; field and vector covers."""
     td = TEMPLATE_DEFAULTS[cfg["design"]["template"]]
-    if not td.get("fields") and cfg["design"]["cover"] != "field":
+    kind, cover = td.get("fields"), cfg["design"]["cover"]
+    if not kind and cover not in ("field", "vectors"):
         return
     sys.path.insert(0, str(HERE / "lib"))
     from fields import field_svg
+    from vectorfields import vector_svg
     fd = root / "build" / "fields"
     fd.mkdir(parents=True, exist_ok=True)
     pg = cfg["_page"]
     mm = lambda v: float(re.match(r"^([\d.]+)mm$", v).group(1)) if v.endswith("mm") else 156.0
     w, h = mm(pg["width"]), mm(pg["height"])
+    title = plain(cfg["book"]["title"])
     colours = field_colours(cfg) or [None]
     ink = cfg["design"]["field-ink"]
-    title = plain(cfg["book"]["title"])
-    # keep ink out from behind the cover's title: set the title as the cover sets it, measure its height,
+    vpal = vector_palette(cfg)
+    write = lambda name, svg: (fd / name).write_text(svg, encoding="utf-8")
+    # keep ink out from behind a cover's title: set the title as the cover sets it, measure its height,
     # and clear from the top of the page to below it
-    clear = (0, 0, w, 14 + cover_title_mm(root, cfg, w) + 8)
-    (fd / "cover.svg").write_text(field_svg(title + "/cover", w, h, colour=colours[0], ink=ink, black=0.6, clear=clear),
-                                  encoding="utf-8")
-    if td.get("fields"):
+    if cover == "field":
+        clear = (0, 0, w, 14 + cover_title_mm(root, cfg, w, "field") + 8)
+        write("cover.svg", field_svg(title + "/cover", w, h, colour=colours[0], ink=ink, black=0.6, clear=clear))
+    elif cover == "vectors":
+        # the title is scattered across the whole cover with halos, so the imagery runs under it
+        write("cover.svg", vector_svg(title + "/cover", w, h, palette=vpal,
+                                      layers=("grid", "streamlines", "embedding")))
+        write("back.svg", vector_svg(title + "/back", w, 62, palette=vpal, layers=("grid", "streamlines")))
+    if kind == "vectors":
+        write("title.svg", vector_svg(title + "/title", w, 120, palette=vpal, layers=("grid", "streamlines")))
+    if kind:
         level = max(1, 1 - int(cfg["sources"]["shift-headings"]))
         n = len(re.findall(r"^#{%d} \S" % level, md, re.M)) + 3
         for i in range(n):
             for k in (1, 2, 3):
-                colour = colours[(i + k) % len(colours)] if k != 2 else None
-                (fd / f"field-{i}-{k}.svg").write_text(
-                    field_svg(f"{title}/{i}/{k}", w, h, colour=colour, ink=ink), encoding="utf-8")
+                seed = f"{title}/{i}/{k}"
+                if kind == "vectors":
+                    write(f"field-{i}-{k}.svg", vector_svg(seed, w, h, palette=vpal, inverse=(k == 2)))
+                    if k == 1:
+                        write(f"band-{i}.svg", vector_svg(f"{title}/band/{i}", w, 100, palette=vpal))
+                else:
+                    colour = colours[(i + k) % len(colours)] if k != 2 else None
+                    write(f"field-{i}-{k}.svg", field_svg(seed, w, h, colour=colour, ink=ink))
 
 
 def typst_args(root):
