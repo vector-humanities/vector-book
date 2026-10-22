@@ -17,7 +17,7 @@ Needs Python 3.11+, Pandoc 3 and Typst 0.13 or later.
 ```bash
 ./vbook new mybook          # start from the starter project
 ./vbook build mybook        # assemble, convert, compile
-./vbook check mybook        # notes and figures set against the sources; missing glyphs
+./vbook check mybook        # notes and figures set against the sources; missing glyphs (--report: book/BUILD.md)
 ./vbook sweep mybook        # every non-ASCII character, checked for font fallback
 ./vbook proof mybook        # contact sheet of the pages
 ./vbook samples mybook      # the book in every template, matching pages side by side
@@ -36,6 +36,7 @@ The specimen in [`examples/specimen/`](examples/specimen/) shows every conventio
 |---|---|
 | [`docs/conventions.md`](docs/conventions.md) | What the Markdown says: chapters, page markers, notes, insertions, verse, figures and overlays, schemes, tables, glossary |
 | [`docs/config.md`](docs/config.md) | Every key in `book.toml` |
+| [`docs/handover.md`](docs/handover.md) | How a finished vector translation passes to Vector Book: the book folder, the manifest, the flow from sign-off to proof |
 | [`docs/practice.md`](docs/practice.md) | How to make a book, from what the Kuki book needed, with the faults met and how the tool handles them |
 | [`AGENTS.md`](AGENTS.md) | Instructions for agents working on this repository |
 

@@ -27,6 +27,7 @@ Every key, with its default. Strings marked *Markdown* may use emphasis and line
 | `fonts.text` | the template's | Font stack for the text, in order of preference |
 | `fonts.mono` | the template's | Font stack for code |
 | `no-hyphen` | `[]` | Words never broken at a line end |
+| `notes` | `"chapter"` | Note numbers restart with each chapter (`"chapter"`) or run through the book (`"book"`) |
 | `end-blanks` | `0` | Pages marked "Page left deliberately blank" before the back cover |
 | `figure-dpi` | `300` | Resolution at which figure images are sized |
 

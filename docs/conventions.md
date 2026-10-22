@@ -42,7 +42,7 @@ Markers inside a footnote definition are dropped, so that notes do not put numbe
 
 ## Notes
 
-Pandoc footnotes, `[^label]` in the text and `[^label]: …` on a line of its own. In a translation every note is the translator's and begins "Tr."; the author's own references stay in the text as printed. Labels must be unique across the whole book: prefix them by section (`[^c3s8-4]` for chapter 3, section 8, note 4).
+Pandoc footnotes, `[^label]` in the text and `[^label]: …` on a line of its own. In a translation every note is the translator's and begins "Tr."; the author's own references stay in the text as printed. Numbers restart with each chapter unless `design.notes = "book"`. Labels must be unique across the whole book: prefix them by section (`[^c3s8-4]` for chapter 3, section 8, note 4).
 
 ## Insertions
 

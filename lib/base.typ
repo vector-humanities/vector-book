@@ -65,7 +65,7 @@
       if n.case == "smallcaps" { smallcaps(lower(num)) } else { cased(n.case, num) }))
     v(2mm)
   }
-  counter(footnote).update(0)
+  context if vb-style.get().at("notes-reset", default: true) { counter(footnote).update(0) }
   vb-run.update(if run != none { run } else { title })
   heading(level: 1, supplement: if num != none { num } else { [] }, title)
   if orig != none { align(al, text(st.orig.size, fill: st.orig.fill, orig)) }
@@ -76,7 +76,7 @@
   let pg = meta.page
   let fonts = meta.fonts.text
   vb-geom.update((width: pg.width, inside: pg.inside, outside: pg.outside))
-  vb-style.update(s => s + (gloss-font: (fonts.at(0), "Gentium Book Plus"), marker: st.marker,
+  vb-style.update(s => s + (notes-reset: meta.notes-reset, gloss-font: (fonts.at(0), "Gentium Book Plus"), marker: st.marker,
     marker-fill: st.marker-fill, marker-font: st.marker-font, figure-rule: st.figure-rule))
 
   set document(title: meta.title-plain, author: meta.author-plain)
@@ -103,7 +103,7 @@
     align(st.h3.align, head-text(st, st.h3, it.body)))
   show heading.where(level: 4): it => block(above: 1em, below: 0.5em, sticky: true, text(pg.size, it.body))
 
-  // notes restart with each chapter
+  // notes restart with each chapter unless design.notes = "book"
   set footnote.entry(separator: st.note-rule, gap: 0.45em, clearance: 1.1em, indent: 0em)
   show footnote.entry: set text(st.note-size)
   show footnote.entry: set par(leading: 0.5em, first-line-indent: 0em)
