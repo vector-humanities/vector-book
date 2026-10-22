@@ -16,6 +16,7 @@ Vector Book typesets books from Markdown section files through Pandoc and Typst.
 vbook                command: new, build, check, sweep, proof, fonts
 lib/vbook.lua        Pandoc filter: chapters, figures and overlays, schemes, alignment, table widths, heading shift
 lib/vbook.typ        Typst functions the filter calls: page markers, figures, glosses, schemes, vertical columns
+lib/fields.py        generated fields for the wildcard template and the field cover
 lib/base.typ         the page design all templates share, driven by a style dictionary (base-style)
 templates/*.typ      page designs: base-style with overrides, bound by template(); each exports book(), chapter(),
                      title-page(), credits-page(), frontispiece(), contents()

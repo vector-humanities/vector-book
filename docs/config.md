@@ -21,8 +21,11 @@ Every key, with its default. Strings marked *Markdown* may use emphasis and line
 
 | Key | Default | |
 |---|---|---|
-| `template` | `"classic"` | Page design: `classic`, `modern` or `kintsugi` (see Templates below) |
-| `cover` | `"frame"` | `frame` (ruled frame with vertical text, after the 1948 Iwanami title page) or `plain` |
+| `template` | `"classic"` | Page design: `classic`, `modern`, `kintsugi` or `wildcard` (see Templates below) |
+| `cover` | the template's | `frame` (ruled frame with vertical text, after the 1948 Iwanami title page), `plain`, or `field` (a generated field with the title stacked over it; the wildcard's default) |
+| `field-palette` | `"mint-pink"` | Colours for generated fields: `mint-pink`, `acid`, `sand-sky`, `coral`, `electric`, or `mono` (black and white only). Each chapter's field takes the next colour in turn |
+| `field-colours` | the palette's | Your own list of colours, e.g. `["#bfe6d4", "#f4c4d3"]`, in place of a palette |
+| `field-ink` | `"#0d0d0d"` | Colour of the fields' solid regions, and of the field cover's back; its text turns white or black to read on it |
 | `page` | the template's | Table of `width`, `height`, `inside`, `outside`, `top`, `bottom`, `size` (body type size) |
 | `fonts.text` | the template's | Font stack for the text, in order of preference |
 | `fonts.mono` | the template's | Font stack for code |
@@ -39,11 +42,14 @@ The three designs offered for the Kuki book. `vbook samples` builds a book in ea
 |---|---|---|---|---|
 | `classic` | A, Classic scholarly (chosen for Kuki) | EB Garamond; centred small-capital headings; source pages in the outer margin; 28% note rule | 156 × 234 mm; inside 22, outside 26, top 22, bottom 24 mm | EB Garamond 12, Gentium Book Plus, Hiragino Mincho ProN, Noto Serif JP, STIX Two Text, STIX Two Math, Apple Symbols |
 | `modern` | B, Modern academic | Source Serif 4 text; Source Sans 3 semibold headings in navy, left-aligned; source pages inline as small grey `[N]`; full-width navy note rule | 156 × 234 mm; inside 22, outside 24, top 20, bottom 22 mm | Source Serif 4, Gentium Book Plus, Hiragino Mincho ProN, Noto Serif JP, STIX Two Text, STIX Two Math, Apple Symbols |
+| `wildcard` | none: a fourth design, after contemporary theory paperbacks | Fira Sans Condensed text; chapter titles in huge Archivo capitals, stacked and broken across lines; a generated field page before every chapter (more where a chapter's recto start leaves blank pages); a huge Contents; the field cover and a back cover in the field ink | 130 × 190 mm; inside 14, outside 16, top 15, bottom 17 mm | Fira Sans (Condensed), Gentium Book Plus, Hiragino Kaku Gothic ProN, STIX Two Text, STIX Two Math, Apple Symbols |
 | `kintsugi` | C, Kintsugi | Crimson Pro and Shippori Mincho; centred gold headings; section numbers as kanji (一, 二, …); gold hairline under the running head and above the notes; figures between gold rules; source pages in gold in the margin | as `modern` | Crimson Pro, Gentium Book Plus, Shippori Mincho, Noto Serif JP, STIX Two Text, STIX Two Math, Apple Symbols |
 
-All three set 10.5 pt body type; the mono stack is Menlo, DejaVu Sans Mono and the template's Mincho. Kintsugi turns a section heading that begins with a number and a full stop (`## 3. The Three Modes`) into its kanji numeral.
+Classic, modern and kintsugi set 10.5 pt body type, wildcard 9.4 pt; the mono stack is Menlo, DejaVu Sans Mono and the template's Mincho. Kintsugi turns a section heading that begins with a number and a full stop (`## 3. The Three Modes`) into its kanji numeral.
 
-Fonts not on the system are open fonts available from Google Fonts or as Homebrew casks (`font-source-serif-4`, `font-source-sans-3`, `font-crimson-pro`, `font-shippori-mincho`). Typst sets the variable Source Serif 4 at its default optical size (20 pt); its text is a little more open than the 10.5 pt optical size a browser would choose.
+Fonts not on the system are open fonts available from Google Fonts or as Homebrew casks (`font-source-serif-4`, `font-source-sans-3`, `font-crimson-pro`, `font-shippori-mincho`, `font-fira-sans-condensed`, `font-archivo-black`).
+
+The wildcard's fields are drawn by `lib/fields.py` at build time: a smooth noise surface, seeded by the book's title and the chapter's position, cut at three levels into colour, a dotted contour, and solid ink with white stipple. The same book always gets the same fields. On the field cover, the ink is kept out of the zone behind the title, and a dark colour too, so that the title never stands on ink. Typst sets the variable Source Serif 4 at its default optical size (20 pt); its text is a little more open than the 10.5 pt optical size a browser would choose.
 
 Each character is set in the first font of the stack that has it. Put the Latin face first, then a face with full diacritics and Greek, then the CJK face, then symbols. Run `vbook sweep` after any change to the stack or the text's character set.
 

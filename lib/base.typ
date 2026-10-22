@@ -3,8 +3,8 @@
 #import "vbook.typ": *
 
 #let base-style = (
-  // text
-  leading: 0.62em, spacing: 0.62em, indent: 1.2em,
+  // text; stretch selects a condensed face where the family has one
+  leading: 0.62em, spacing: 0.62em, indent: 1.2em, stretch: 100%,
   // headings: case is "smallcaps", "upper" or "none"
   head-font: none, head-colour: luma(0),
   h1: (size: 19pt, weight: "regular", tracking: 0.04em, case: "smallcaps", align: center),
@@ -24,6 +24,11 @@
   note-size: 8.2pt, note-rule: line(length: 28%, stroke: 0.4pt),
   // figures: a stroke for hairlines either side, or none
   figure-rule: none,
+  // contents: entry size and weight, dot leaders or not
+  toc: (size: 1em, weight: "regular", leaders: true, gap: 0.55em),
+  // field pages: "none", or "always" (every chapter is preceded by at least one generated field page;
+  // any blank page before a chapter opening also takes one)
+  interludes: "none",
   // title page
   title: (author-tracking: 0.3em, size: 25pt, weight: "regular", tracking: 0.04em, case: "smallcaps",
           font: none, fill: luma(0), rule: 0.4pt + luma(0), credit-fill: luma(0)),
@@ -37,20 +42,37 @@
 }
 
 #let head-text(st, spec, body) = {
-  let f = if st.head-font != none { (font: st.head-font) } else { (:) }
+  let font = spec.at("font", default: st.head-font)
+  let f = if font != none { (font: font) } else { (:) }
   text(spec.size, weight: spec.weight, tracking: spec.at("tracking", default: 0em), fill: st.head-colour,
     style: spec.at("style", default: "normal"), ..f, cased(spec.at("case", default: "none"), body))
 }
 
+// Field pages: the blank pages between the end of one chapter (marked <vb-pre>) and the next opening.
+// Returns (chapter index, position) for page p, or none.
+#let interlude-at(p) = {
+  let pres = query(<vb-pre>)
+  let opens = query(heading.where(level: 1, outlined: true))
+  for (i, m) in pres.enumerate() {
+    if i >= opens.len() { break }
+    let e = m.location().page()
+    let o = opens.at(i).location().page()
+    if p > e and p < o { return (i, p - e) }
+  }
+  none
+}
+
 #let base-runhead(st, meta) = context {
   let p = here().page()
+  if st.interludes != "none" and interlude-at(p) != none { return }
   let opens = query(heading.where(level: 1)).filter(h => h.location().page() == p)
   if opens.len() > 0 { return }
   let run = vb-run.get()
   if run == none { return }
   let t = if calc.odd(p) { run } else { meta.running-title }
   let r = st.runhead
-  let body = align(center, text(r.size, tracking: r.tracking, fill: r.fill,
+  let rf = if r.at("font", default: none) != none { (font: r.font) } else { (:) }
+  let body = align(center, text(r.size, tracking: r.tracking, fill: r.fill, weight: r.at("weight", default: "regular"), ..rf,
     if r.case == "smallcaps" { smallcaps(lower(upper(t))) } else { cased(r.case, t) }))
   if r.rule != none { block(width: 100%, stroke: (bottom: r.rule), inset: (bottom: 1.5mm), body) } else { body }
 }
@@ -58,12 +80,18 @@
 #let vb-title-note = state("vb-title-note", none)
 
 #let base-chapter(st, title, num: none, orig: none, run: none, note: none) = {
+  if st.interludes != "none" {
+    [#metadata("vb-pre")<vb-pre>]
+    pagebreak(to: "even", weak: true)
+    pagebreak(to: "odd")
+  }
   pagebreak(to: "odd", weak: true)
   v(st.chapter-sink)
   let al = st.h1.align
   if num != none {
     let n = st.num
-    align(al, text(n.size, tracking: n.tracking, fill: n.fill,
+    let nf = if n.at("font", default: none) != none { (font: n.font) } else { (:) }
+    align(al, text(n.size, tracking: n.tracking, fill: n.fill, weight: n.at("weight", default: "regular"), ..nf,
       if n.case == "smallcaps" { smallcaps(lower(num)) } else { cased(n.case, num) }))
     v(2mm)
   }
@@ -84,22 +112,36 @@
     marker-fill: st.marker-fill, marker-font: st.marker-font, figure-rule: st.figure-rule))
 
   set document(title: meta.title-plain, author: meta.author-plain)
-  set text(font: fonts, size: pg.size, lang: meta.lang, region: meta.region, hyphenate: true, number-type: "old-style")
+  set text(font: fonts, size: pg.size, lang: meta.lang, region: meta.region, hyphenate: true, number-type: "old-style", stretch: st.stretch)
   set par(justify: true, leading: st.leading, spacing: st.spacing, first-line-indent: (amount: st.indent, all: false))
   show heading: set text(font: fonts, weight: "regular")
   show heading: set par(justify: false)
+  show heading: set text(hyphenate: false)
   show regex(meta.nohyphen): it => box(it)
 
   set page(width: pg.width, height: pg.height,
     margin: (inside: pg.inside, outside: pg.outside, top: pg.top, bottom: pg.bottom),
     header: base-runhead(st, meta), header-ascent: 40%,
-    footer: context { if vb-folio.get() { align(center, text(st.folio.size, fill: st.folio.fill, counter(page).display())) } })
+    footer: context {
+      if st.interludes != "none" and interlude-at(here().page()) != none { return }
+      if vb-folio.get() { align(center, text(st.folio.size, fill: st.folio.fill, counter(page).display())) }
+    },
+    background: if st.interludes != "none" { context {
+      let f = interlude-at(here().page())
+      if f != none {
+        let (i, k) = f
+        image("/build/fields/field-" + str(i) + "-" + str(calc.min(k, 3)) + ".svg", width: pg.width, height: pg.height, fit: "cover")
+      }
+    } })
 
-  show heading.where(level: 1): it => block(width: 100%, above: 0pt, below: 4mm,
+  show heading.where(level: 1): it => block(width: 100%, above: 0pt, below: 4mm, {
+    set par(leading: st.h1.at("leading", default: 0.65em))
+    set text(hyphenate: st.h1.at("hyphenate", default: false))
     align(st.h1.align, head-text(st, st.h1, it.body) + context {
       let n = vb-title-note.get()
       if n != none { footnote(n) }
-    }))
+    })
+  })
   show heading.where(level: 2): it => block(width: 100%, above: 1.4em, below: 0.9em, sticky: true, {
     show regex(if st.section-kanji { "^\d+\.\s+" } else { "\u{E000}\u{E001}" }): m => {
       kanji(int(m.text.trim().trim(".")))
@@ -144,8 +186,10 @@
     let isfig = it.element.func() == figure
     let s = it.element.supplement
     let pre = if not isfig and s != none and s != [] and s != [Section] { [#s. ] } else { [] }
-    block(above: 0.55em, below: 0.55em, link(it.element.location(),
-      [#pre#it.body() #box(width: 1fr, repeat(gap: 0.25em)[.]) #it.page()]))
+    let t = st.toc
+    let fill = if t.leaders { box(width: 1fr, repeat(gap: 0.25em)[.]) } else { h(1fr) }
+    block(above: t.gap, below: t.gap, text(t.size, weight: t.weight, link(it.element.location(),
+      [#pre#it.body() #fill #it.page()])))
   }
   body
 }

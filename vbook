@@ -18,6 +18,7 @@ import csv
 import glob
 import io
 import json
+import math
 import re
 import shutil
 import subprocess
@@ -35,7 +36,8 @@ DEFAULTS = {
     "book": {"title": "Untitled", "subtitle": None, "author": None, "original-title": None,
              "running-title": None, "credit": None, "affiliation": None, "credits": None,
              "lang": "en", "region": "gb", "output": "book/book.pdf", },
-    "design": {"template": "classic", "cover": "frame", "page": {}, "fonts": {},
+    "design": {"template": "classic", "cover": None, "field-palette": "mint-pink", "field-colours": None,
+               "field-ink": "#0d0d0d", "page": {}, "fonts": {},
                "no-hyphen": [], "end-blanks": 0, "figure-dpi": 300, "notes": "chapter"},
     "sources": {"front": [], "body": ["text/*.md"], "back": [], "glossary": None,
                 "glossary-columns": ["source", "reading", "english"],
@@ -68,6 +70,12 @@ TEMPLATE_DEFAULTS = {
                  "text": ["Crimson Pro", "Gentium Book Plus", "Shippori Mincho", "Noto Serif JP",
                           "STIX Two Text", "STIX Two Math", "Apple Symbols"],
                  "mono": ["Menlo", "DejaVu Sans Mono", "Shippori Mincho"]},
+    "wildcard": {"width": "130mm", "height": "190mm", "inside": "14mm", "outside": "16mm",
+                 "top": "15mm", "bottom": "17mm", "size": "9.4pt",
+                 "text": ["Fira Sans", "Gentium Book Plus", "Hiragino Kaku Gothic ProN",
+                          "STIX Two Text", "STIX Two Math", "Apple Symbols"],
+                 "mono": ["Menlo", "DejaVu Sans Mono", "Hiragino Kaku Gothic ProN"],
+                 "display": "Archivo", "cover": "field", "fields": True},
 }
 
 
@@ -91,6 +99,8 @@ def load(root, template=None):
     if template:
         # another template's sample: its own page and fonts, not this book's overrides
         raw.setdefault("design", {}).update(template=template, page={}, fonts={})
+        if "cover" in TEMPLATE_DEFAULTS.get(template, {}):
+            raw["design"]["cover"] = TEMPLATE_DEFAULTS[template]["cover"]
     cfg = merge(DEFAULTS, raw)
     tpl = cfg["design"]["template"]
     if tpl not in TEMPLATE_DEFAULTS:
@@ -101,6 +111,8 @@ def load(root, template=None):
         if not LENGTH.match(str(v)):
             die(f"design.page.{k} = {v!r} is not a length such as 156mm or 10.5pt")
     cfg["_page"] = page
+    if not cfg["design"]["cover"]:
+        cfg["design"]["cover"] = td.get("cover", "frame")
     if cfg["imprint"]["series-style"] not in ("roman", "italic", "caps"):
         die('imprint.series-style should be "roman", "italic" or "caps"')
     for k in ("isbn", "doi", "licence"):          # first placed in [book]; they belong to the imprint page
@@ -283,6 +295,16 @@ def imprint_typ(root, cfg):
     return "(" + ", ".join(f"{k}: {v}" for k, v in fields.items()) + ")"
 
 
+def field_typ(cfg):
+    """Ink and the text colour that reads on it, for the field covers."""
+    sys.path.insert(0, str(HERE / "lib"))
+    from fields import luminance
+    ink = cfg["design"]["field-ink"]
+    colour(ink)
+    on = "#ffffff" if luminance(ink) < 0.4 else "#0d0d0d"
+    return f'(ink: rgb("{ink}"), on-ink: rgb("{on}"))'
+
+
 def meta_typ(root, cfg):
     b, d, c, bk = cfg["book"], cfg["design"], cfg["cover"], cfg["back"]
     pg = cfg["_page"]
@@ -301,6 +323,7 @@ def meta_typ(root, cfg):
         "credit": md2ty(b["credit"]),
         "affiliation": md2ty(b["affiliation"]),
         "imprint": imprint_typ(root, cfg),
+        "field": field_typ(cfg),
         "credits": md2ty(b["credits"]) if b["credits"] else "[]",
         "lang": tystr(b["lang"]),
         "region": tystr(b["region"]),
@@ -343,6 +366,79 @@ def stage(root, cfg):
     return bd
 
 
+# colours for the wildcard's fields: each chapter's field takes the next colour in turn
+FIELD_PALETTES = {
+    "mint-pink": ["#bfe6d4", "#f4c4d3"],
+    "acid": ["#dcf25c", "#a9ecff"],
+    "sand-sky": ["#efdcb4", "#bcd8f0"],
+    "coral": ["#ffb199", "#ffe08a"],
+    "electric": ["#b3b8ff", "#ffc2b5"],
+    "mono": [],
+}
+
+
+def field_colours(cfg):
+    d = cfg["design"]
+    cols = d["field-colours"]
+    if cols is None:
+        if d["field-palette"] not in FIELD_PALETTES:
+            die(f"design.field-palette {d['field-palette']!r}: one of {', '.join(FIELD_PALETTES)}")
+        cols = FIELD_PALETTES[d["field-palette"]]
+    for c in cols + [d["field-ink"]]:
+        colour(c)
+    return cols
+
+
+def cover_title_mm(root, cfg, width_mm):
+    """Height in mm of the field cover's stacked title, measured by Typst with the cover's settings."""
+    title = tystr(plain(cfg["book"]["title"]))
+    lang = tystr(cfg["book"]["lang"])
+    src = root / "build" / "measure.typ"
+    src.write_text(f"""#set page(width: {width_mm}mm, height: 400mm, margin: (x: 10mm))
+#set text(lang: {lang})
+#context {{
+  let b = block(width: {width_mm - 20}mm, {{
+    set par(leading: 0.06em)
+    set text(hyphenate: true)
+    text(58pt, font: ("Archivo", "Fira Sans"), tracking: -0.02em, upper({title}))
+  }})
+  [#metadata(measure(b).height.mm()) <vb-title-height>]
+}}
+""", encoding="utf-8")
+    r = run(["typst", "eval", *typst_args(root), "query(<vb-title-height>).first().value", "--in", str(src)])
+    return float(r.stdout.strip())
+
+
+def make_fields(root, cfg, md):
+    """Generated field pages and cover for the wildcard template and the field cover."""
+    td = TEMPLATE_DEFAULTS[cfg["design"]["template"]]
+    if not td.get("fields") and cfg["design"]["cover"] != "field":
+        return
+    sys.path.insert(0, str(HERE / "lib"))
+    from fields import field_svg
+    fd = root / "build" / "fields"
+    fd.mkdir(parents=True, exist_ok=True)
+    pg = cfg["_page"]
+    mm = lambda v: float(re.match(r"^([\d.]+)mm$", v).group(1)) if v.endswith("mm") else 156.0
+    w, h = mm(pg["width"]), mm(pg["height"])
+    colours = field_colours(cfg) or [None]
+    ink = cfg["design"]["field-ink"]
+    title = plain(cfg["book"]["title"])
+    # keep ink out from behind the cover's title: set the title as the cover sets it, measure its height,
+    # and clear from the top of the page to below it
+    clear = (0, 0, w, 14 + cover_title_mm(root, cfg, w) + 8)
+    (fd / "cover.svg").write_text(field_svg(title + "/cover", w, h, colour=colours[0], ink=ink, black=0.6, clear=clear),
+                                  encoding="utf-8")
+    if td.get("fields"):
+        level = max(1, 1 - int(cfg["sources"]["shift-headings"]))
+        n = len(re.findall(r"^#{%d} \S" % level, md, re.M)) + 3
+        for i in range(n):
+            for k in (1, 2, 3):
+                colour = colours[(i + k) % len(colours)] if k != 2 else None
+                (fd / f"field-{i}-{k}.svg").write_text(
+                    field_svg(f"{title}/{i}/{k}", w, h, colour=colour, ink=ink), encoding="utf-8")
+
+
 def typst_args(root):
     args = ["--root", str(root)]
     if (root / "fonts").is_dir():
@@ -372,6 +468,7 @@ def build(root, quiet=False, template=None, output=None):
     cfg = load(root, template)
     md, fs = assemble(root, cfg)
     bd = stage(root, cfg)
+    make_fields(root, cfg, md)
     (bd / "body.md").write_text(md, encoding="utf-8")
     s = cfg["sources"]
     cmd = ["pandoc", str(bd / "body.md"), "-f", "markdown+raw_attribute+footnotes+pipe_tables",
