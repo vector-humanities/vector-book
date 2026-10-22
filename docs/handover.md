@@ -49,12 +49,12 @@ Page markers give every passage a stable reference for proof corrections; no fur
 
 ## The flow
 
-1. **Gate.** The translation checks pass on the text (pages continuous, notes paired, banned words, glossary counts), and the translator signs the text off in `STATUS.md`.
+1. **Text gate.** The translation checks pass on the text (pages continuous, notes paired, banned words, glossary counts), and the translator signs the text off in `STATUS.md`.
 2. **Build early.** Before the gate, build from the first merged chapter and after every merge. A partial manifest is fine: globs take whatever files exist.
 3. **Design.** `vbook samples` sets the book in each template; the translator chooses, and the choice goes in `[design]` and the decisions log in `STATUS.md`.
 4. **Build and check.** `vbook check <folder> --report` writes the PDF to `book/` and `book/BUILD.md`: date, Vector Book version, template, page count, notes and figures set against the sources, missing glyphs, long captions without a key, and the files in order. Commit both.
 5. **Proof.** Faults in the text go back as change lists in the method's format (`### readable | p. N`, `OLD`, `NEW`, `WHY`) and are applied by the translation side to the literal and readable masters together. Faults in the layout are fixed in `book.toml` or in Vector Book.
-6. **Rebuild** after each round, until the translator signs off the book.
+6. **Rebuild** after each round, and run the translation side's check of the PDF (below), until the book gate is passed.
 
 ## Returns
 
@@ -86,6 +86,22 @@ When the book side finds a fault, it sends a return: one file per round, `proof/
 4. The translation side answers every item, reruns `vbook check --report`, commits, and sets ANSWERED. The book side rebuilds and sets CLOSED, or reopens items with a reason.
 5. A return against a partial handover deals only with what is built; faults in unfinished parts wait for the next handover.
 6. Each side tells the other when a return is opened or answered. The file is the record.
+
+## Checks from the translation side
+
+The translation side checks the built book independently of Vector Book. `vt_bookcheck.py <folder>` (in the translation tools) extracts the PDF's text and compares it with the translation's own source files: every body word in order, every note and every heading, each difference located by file and source page. It runs when the translator asks, before a return is marked ANSWERED, and before sign-off.
+
+Its findings are recorded as `proof/check-NN.md`, the counterpart of `return-NN.md`, in the same format with the direction reversed. Its items are LAYOUT items addressed to the book side, which writes the Response lines and rebuilds. The translation side writes the closing line for each item, and the file's status. A check with no findings is recorded as CLOSED.
+
+## Book gate
+
+A book is ready for the translator's sign-off when:
+
+1. `book/BUILD.md` is clean: notes and figures all set, no missing glyphs;
+2. the latest `vt_bookcheck.py` run has no open findings;
+3. every `return-NN.md` and every `check-NN.md` in `proof/` is CLOSED.
+
+The translator then signs off the book in `STATUS.md`, with the date, the Vector Book commit from `BUILD.md`, and the PDF.
 
 ## Running the tool
 
