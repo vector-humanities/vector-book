@@ -7,6 +7,7 @@
     vbook check [DIR]          page, note and figure counts; missing glyphs (--report writes BUILD.md beside the PDF)
     vbook sweep [DIR]          glyph sweep: every non-ASCII character, checked for font fallback
     vbook proof [DIR]          contact sheet of the built book (build/proof.png)
+    vbook return [DIR]         check, then write proof/return-NN.md with located faults for the translation side
     vbook samples [DIR]        the book in every template, with matching pages side by side (build/samples.png)
     vbook fonts [DIR]          the font stacks and whether each font is installed
 
@@ -40,7 +41,7 @@ DEFAULTS = {
                 "glossary-columns": ["source", "reading", "english"],
                 "glossary-headers": ["Source", "Reading", "English"],
                 "glossary-title": "Glossary", "overlays": "figures/overlays.json",
-                "parse-headings": False, "shift-headings": 0, "bibliography": None, "csl": None},
+                "parse-headings": False, "shift-headings": 0, "handover": "partial", "bibliography": None, "csl": None},
     "markers": {"page": r"\[p\. (\d+)\]", "strip": []},
     "frontispiece": None,
     "cover": {"paper": "#efe8d8", "ink": "#1f1b16", "accent": "#a8873c", "frame": None},
@@ -412,8 +413,8 @@ ALIASES = {"hiraginominchopron": "hiraminpron", "hiraginominchopro": "hiraminpro
            "applesymbols": "applesymbols", "stixtwotext": "stixtwotext", "stixtwomath": "stixtwomath"}
 
 
-def cmd_sweep(root):
-    cfg = load(root)
+def sweep(root, cfg):
+    """Set every distinct non-ASCII character on test pages; return (chars, groups, problems)."""
     md, _ = assemble(root, cfg)
     text = md + json.dumps(cfg, ensure_ascii=False)
     chars = sorted({c for c in text if ord(c) > 127 and unicodedata.category(c)[0] not in "CZ"})
@@ -441,18 +442,128 @@ def cmd_sweep(root):
     run(["typst", "compile", *typst_args(root), str(bd / "sweep.typ"), str(pdf)])
     stack = [re.sub(r"\W", "", f).lower() for f in cfg["_fonts"]["text"]] + ["stixtwotext"]
     stack = [ALIASES.get(s, s) for s in stack]
-    bad = 0
-    print(f"{len(chars)} distinct non-ASCII characters on {len(groups)} pages")
+    problems = []
     for i, g in enumerate(groups, 1):
         used = set(pdffonts(pdf, i))
         missing = [f for f in used if "LastResort" in f]
         outside = [f for f in used if f not in missing and not any(re.sub(r"\W", "", f).lower().startswith(s[:10]) for s in stack)]
         if missing or outside:
-            bad += 1
-            flag = "MISSING" if missing else "fallback"
-            print(f"  {flag:8} {''.join(g)}  fonts: {', '.join(sorted(used))}")
-    print("clean" if not bad else f"{bad} page(s) need attention: add a font to design.fonts.text")
-    return 1 if bad else 0
+            problems.append(("MISSING" if missing else "fallback", g, sorted(used)))
+    return chars, groups, problems
+
+
+def cmd_sweep(root):
+    chars, groups, problems = sweep(root, load(root))
+    print(f"{len(chars)} distinct non-ASCII characters on {len(groups)} pages")
+    for flag, g, used in problems:
+        print(f"  {flag:8} {''.join(g)}  fonts: {', '.join(used)}")
+    print("clean" if not problems else f"{len(problems)} page(s) need attention: add a font to design.fonts.text")
+    return 1 if problems else 0
+
+
+# ---- returns to the translation side (docs/handover.md, Returns)
+
+def located_lines(root, cfg):
+    """(file, line number, source page, text) for every line the book reads, working blocks excluded."""
+    page = re.compile(cfg["markers"]["page"])
+    for f in sources(root, cfg):
+        p, working = None, False
+        for n, line in enumerate(f.read_text(encoding="utf-8").split("\n"), 1):
+            if "<!-- working -->" in line:
+                working = True
+            if not working:
+                for m in page.finditer(line):
+                    p = m.group(1)
+                yield f.relative_to(root), n, p, line
+            if "<!-- /working -->" in line:
+                working = False
+
+
+def where(f, n, p):
+    return f"`{f}:{n}`" + (f", after [p. {p}]" if p else ", before the first page marker")
+
+
+def findings(root, cfg):
+    """Faults a check can locate in the sources: (kind, title, where, evidence)."""
+    out = []
+    lines = list(located_lines(root, cfg))
+    defs, refs = {}, {}
+    heads = {}
+    for f, n, p, line in lines:
+        m = re.match(r"^\[\^([^\]]+)\]:", line)
+        if m:
+            defs.setdefault(m.group(1), []).append((f, n, p))
+        for r in re.finditer(r"\[\^([^\]]+)\](?!:)", line[m.end():] if m else line):
+            refs.setdefault(r.group(1), []).append((f, n, p))
+        if re.match(r"^# \S", line):
+            heads.setdefault(f, []).append(n)
+        cap = re.match(r"^\*\*(Figure \d+)\.\*\*(.*)$", line)
+        if cap and not re.search(r"\b(Labels|Key):", cap.group(2)):
+            words = re.sub(r"\[\^[^\]]+\]|[*_`]", "", cap.group(2)).split()
+            if len(words) > CAPTION_WORDS:
+                out.append(("MARKUP", f"{cap.group(1)}: long caption with no key marker", where(f, n, p),
+                            f"{len(words)} words with no \"Key:\" or \"Labels:\"; the whole caption is set in the List of Figures. "
+                            "Add \"Key: \" where the key begins, or confirm it is all caption."))
+        img = re.match(r"^!\[[^\]]*\]\(([^)\s]+)", line)
+        if img and not (root / img.group(1)).exists():
+            out.append(("SOURCES", f"Figure image not found: {img.group(1)}", where(f, n, p),
+                        "The image line names a file that is not in the book folder."))
+    for label, ds in defs.items():
+        if len(ds) > 1:
+            out.append(("MARKUP", f"Note label defined {len(ds)} times: [^{label}]", "; ".join(where(*d) for d in ds),
+                        "Labels must be unique across the book; Pandoc keeps one definition and the other note is lost."))
+        if label not in refs:
+            out.append(("MARKUP", f"Note defined but not referenced: [^{label}]", where(*ds[0]),
+                        "No [^" + label + "] in the text; Pandoc drops the note."))
+    for label, rs in refs.items():
+        if label not in defs:
+            out.append(("MARKUP", f"Note referenced but not defined: [^{label}]", where(*rs[0]),
+                        "The reference is set as literal text."))
+    for f, ns in heads.items():
+        if len(ns) > 1:
+            out.append(("MARKUP", f"{len(ns)} level-one headings in one file", ", ".join(f"`{f}:{n}`" for n in ns),
+                        "At most one level-one heading per section file; split the file or make the later headings level two."))
+    return out, lines
+
+
+def next_return(root):
+    pd = root / "proof"
+    pd.mkdir(exist_ok=True)
+    nums = [int(m.group(1)) for p in pd.glob("return-*.md") if (m := re.match(r"return-(\d+)\.md$", p.name))]
+    return pd / f"return-{(max(nums) + 1 if nums else 1):02d}.md", (max(nums) + 1 if nums else 1)
+
+
+def cmd_return(root):
+    import datetime
+    code = cmd_check(root, report=True)
+    cfg = load(root)
+    out, lines = findings(root, cfg)
+    _, _, problems = sweep(root, cfg)
+    for flag, g, used in problems:
+        at = {}
+        for c in g:
+            hit = next(((f, n, p) for f, n, p, line in lines if c in line), None)
+            if hit:
+                at.setdefault(hit, []).append(c)
+        locs = [f"{''.join(cs)} first at {where(*h)}" for h, cs in at.items()]
+        out.append(("LAYOUT", f"{'Missing glyphs' if flag == 'MISSING' else 'Font fallback'}: {''.join(g)}",
+                    "; ".join(locs) or "(not found in the sources: book.toml text)",
+                    f"Set in {', '.join(used)}. A font for these characters goes in design.fonts.text. No action for the translation side."))
+    path, num = next_return(root)
+    rows = [("Book", root.name), ("Round", f"{num:02d}"), ("Date", datetime.date.today().isoformat()),
+            ("Vector Book", tool_version()), ("Build", f"{'FAILED' if code else 'passed'} (`{Path(cfg['book']['output']).parent}/BUILD.md`)"),
+            ("Handover", cfg["sources"]["handover"]), ("Status", "OPEN")]
+    md = [f"# Return {num:02d}: {plain(cfg['book']['title'])}", "", "| | |", "|---|---|"]
+    md += [f"| {k} | {v} |" for k, v in rows]
+    md += ["", "Kinds: MARKUP, TEXT, QUERY, SOURCES, LAYOUT, OTHER. Responses: FIXED, CHANGED-OTHERWISE, QUERY-TO-TRANSLATOR, "
+           "DECLINED, NOTED. Format and rules: Vector Book `docs/handover.md`, Returns.", ""]
+    if not out:
+        md += ["No faults found by `vbook check` and `vbook sweep`. Items from proof are added below by hand, from R1.", ""]
+    for i, (kind, title, loc, ev) in enumerate(out, 1):
+        md += [f"## R{i} · {kind} · {title}", "", f"- Where: {loc}", "- Found by: vbook return", f"- Evidence: {ev}",
+               "- Proposed:", "- Response:", "- Book side:", ""]
+    path.write_text("\n".join(md), encoding="utf-8")
+    print(f"{path.relative_to(root)}: {len(out)} item(s) from the checks; add proof items by hand")
 
 
 def cmd_proof(root, sel):
@@ -532,7 +643,7 @@ def cmd_new(dest):
 
 def main():
     ap = argparse.ArgumentParser(prog="vbook", description=__doc__.split("\n")[0])
-    ap.add_argument("command", choices=["new", "build", "check", "sweep", "proof", "samples", "fonts"])
+    ap.add_argument("command", choices=["new", "build", "check", "sweep", "proof", "samples", "return", "fonts"])
     ap.add_argument("dir", nargs="?", default=".")
     ap.add_argument("--pages", help="for proof: pages to include, as typst --pages takes them (e.g. 1-12,40)")
     ap.add_argument("--report", action="store_true", help="for check: also write BUILD.md beside the PDF")
@@ -548,6 +659,8 @@ def main():
         sys.exit(cmd_sweep(root))
     elif a.command == "proof":
         cmd_proof(root, a.pages)
+    elif a.command == "return":
+        cmd_return(root)
     elif a.command == "samples":
         cmd_samples(root)
     elif a.command == "fonts":

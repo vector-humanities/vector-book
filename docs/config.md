@@ -61,6 +61,7 @@ Each character is set in the first font of the stack that has it. Put the Latin 
 | `overlays` | `"figures/overlays.json"` | Figure glosses; a missing file means none |
 | `parse-headings` | `false` | Read `Chapter N. Title (原題)` headings (see [conventions.md](conventions.md#chapters)) |
 | `shift-headings` | `0` | Added to every heading level; `-1` when chapters are `##` |
+| `handover` | `"partial"` | `"partial"` or `"final"`, for the header of returns (docs/handover.md) |
 | `bibliography` | none | A bibliography file for Pandoc's citeproc |
 | `csl` | none | A CSL style for it |
 

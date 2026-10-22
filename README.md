@@ -21,6 +21,7 @@ Needs Python 3.11+, Pandoc 3 and Typst 0.13 or later.
 ./vbook sweep mybook        # every non-ASCII character, checked for font fallback
 ./vbook proof mybook        # contact sheet of the pages
 ./vbook samples mybook      # the book in every template, matching pages side by side
+./vbook return mybook       # check, then write proof/return-NN.md for the translation side
 ./vbook fonts mybook        # the font stacks, and which are installed
 ```
 

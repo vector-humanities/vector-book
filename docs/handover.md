@@ -56,6 +56,37 @@ Page markers give every passage a stable reference for proof corrections; no fur
 5. **Proof.** Faults in the text go back as change lists in the method's format (`### readable | p. N`, `OLD`, `NEW`, `WHY`) and are applied by the translation side to the literal and readable masters together. Faults in the layout are fixed in `book.toml` or in Vector Book.
 6. **Rebuild** after each round, until the translator signs off the book.
 
+## Returns
+
+When the book side finds a fault, it sends a return: one file per round, `proof/return-NN.md` in the book folder, committed and kept with the book like the decisions log. `vbook return <folder>` runs the check and writes the next file with every fault the checks can locate; items from proof are added by hand below them. A blank is in `starter/proof/return.md`.
+
+**Header.** Book, round, date, Vector Book commit, build result, handover state (`[sources] handover = "partial"` or `"final"`), and status: OPEN (the book side has written it), ANSWERED (the translation side has responded, applied, rebuilt), CLOSED (the book side has rebuilt and accepts), or OPEN again with items reopened.
+
+**Items** are numbered R1, R2, … within the file; elsewhere they are cited as `return-02 R3`. Each has a kind, a location, how it was found, the evidence, an optional proposed change, the translation side's response and the book side's closing line.
+
+| Kind | What | Who acts |
+|---|---|---|
+| MARKUP | The form of the text, not its wording: heading form, note labels (duplicate, unreferenced, undefined), a page marker out of place, a figure line, a caption without `Key:`, a section break or scheme written another way | Translation side applies; the book side may propose the exact change |
+| TEXT | Wording: an apparent misprint, typo or dropped word seen in proof | Translation side checks against the literal and the source, and applies |
+| QUERY | A choice only the translator can make, which the layout exposes: a title too long for a running head, a note longer than a page, a word that breaks badly | The translator decides |
+| SOURCES | A file or table the translation side owns: `[book]`, `[sources]`, `[markers]`, `glossary.csv`, the figures manifest, a missing image or file | Translation side |
+| LAYOUT | The book side's own fault, fixed in Vector Book or `[design]`: fonts, spacing, breaks | Book side; recorded for the trail |
+| OTHER | A case that fits none of the above, with a one-line description of what happened | The translator, as for a QUERY, until the two sides agree its kind or what to do |
+
+**Where** gives the file and line, the source page (`after [p. N]`) and, for proof items, the PDF page. Lines move when the text is edited, so the source page and the quoted text are the anchors that last. No item without a location.
+
+**Proposed** (MARKUP and TEXT, optional) is a change-list entry in the method's format (`### readable | p. N`, `OLD`, `NEW`, `WHY`), with an `OLD` that matches once.
+
+**Response**, written by the translation side under each item: FIXED (with the commit, and whether the literal changed too), CHANGED-OTHERWISE (what was done and why), QUERY-TO-TRANSLATOR (with the date asked), DECLINED (with the reason, e.g. the source prints it so), or NOTED (LAYOUT items). **Book side** closes each item after the rebuild: CLOSED, or REOPENED with the reason.
+
+**Rules**
+1. The book side never edits `text/`, `front/`, `back/` or `glossary.csv`. It describes and proposes. The translation side applies changes to the literal and readable masters together (literal first, the readable from it), with `vt_apply.py`.
+2. Every item says exactly where, so that it can be found without the person who reported it.
+3. The translator decides every QUERY and every OTHER; neither side settles one. When the same kind of OTHER case recurs, it gets a kind of its own, added to this table.
+4. The translation side answers every item, reruns `vbook check --report`, commits, and sets ANSWERED. The book side rebuilds and sets CLOSED, or reopens items with a reason.
+5. A return against a partial handover deals only with what is built; faults in unfinished parts wait for the next handover.
+6. Each side tells the other when a return is opened or answered. The file is the record.
+
 ## Running the tool
 
 Vector Book stays in its own repository and is called by path; nothing is copied into the book's repository:
