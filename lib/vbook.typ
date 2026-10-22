@@ -89,6 +89,12 @@
   ..t.clusters().map(c => box(width: size * 1.2, height: size * 1.1,
     align(center + horizon, text(size, weight: weight, top-edge: "ascender", bottom-edge: "descender", c)))))
 
+// A tracked line of capitals on a cover or title page; emphasis in it is set in small capitals, since tracked italic reads poorly beside tracked capitals
+#let tracked-line(size, body, tracking: 0.08em) = text(size, tracking: tracking, {
+  show emph: it => smallcaps(it.body)
+  body
+})
+
 // A page of generated preliminaries: no running head, no folio
 #let plain-page(body, ..args) = page(header: none, footer: none, ..args, body)
 

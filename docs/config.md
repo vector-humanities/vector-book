@@ -97,7 +97,7 @@ Follow the typography of the edition translated, but do not reproduce a publishe
 |---|---|
 | `portrait` | `{ image = "…", width = "30mm", caption = "…" }` |
 | `quote` | *Markdown.* A short passage from the book |
-| `quote-source` | *Markdown* |
+| `quote-source` | *Markdown.* Set in tracked capitals; emphasis in it (a title) is set in small capitals |
 | `blurb` | *Markdown, paragraphs* |
 
 ## Fonts folder

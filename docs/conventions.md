@@ -73,7 +73,7 @@ An image on a line of its own, followed by a caption paragraph that begins with 
 A caption written as the image's alt text also works. The figure is built as follows.
 
 - **Size.** A PNG or JPEG is set at the size it had in the source: its pixel width divided by `figure-dpi` (300 by default), never wider than the text. Give `{width=60mm}` after the image to set it directly; an SVG without a width is set at 70% of the measure.
-- **Caption and key.** Text from "Labels:" or "Key:" onwards is set as a key in small grey type under the figure. The rest is the caption.
+- **Caption and key.** Text from "Labels:" or "Key:" onwards is set as a key in small grey type under the figure. The rest is the caption, and is set in full in the List of Figures, so mark the key of any long caption. `vbook check` lists captions over 20 words with no marker.
 - **Notes in captions** are set in the text and left out of the List of Figures.
 - **Overlays.** English glosses from `figures/overlays.json` are laid over the figure's labels in 5.5 pt italic. The file maps each image's file name to a list of glosses:
 

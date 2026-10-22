@@ -345,6 +345,23 @@ def pages(pdf):
     return int(m.group(1)) if m else 0
 
 
+CAPTION_WORDS = 20
+
+
+def unkeyed_captions(md):
+    """Figure captions long enough to want a key, but with no marker to split one off."""
+    caps = [(m.group(1), m.group(2)) for m in re.finditer(r"^\*\*(Figure \d+)\.\*\*(.*)$", md, re.M)]
+    caps += [(m.group(1)[:30], m.group(1)) for m in re.finditer(r"^!\[([^\]]+)\]\([^)]+\)", md, re.M)]
+    out = []
+    for name, text in caps:
+        if re.search(r"\b(Labels|Key):", text):
+            continue
+        words = re.sub(r"\[\^[^\]]+\]|[*_`]", "", text).split()
+        if len(words) > CAPTION_WORDS:
+            out.append(name)
+    return out
+
+
 def cmd_check(root):
     cfg, out = build(root)
     md, _ = assemble(root, cfg)
@@ -353,10 +370,14 @@ def cmd_check(root):
     notes = count(root, "footnote")
     figs = count(root, "figure.where(kind: image)")
     missing = [f for f in set(pdffonts(out)) if "LastResort" in f]
+    long_caps = unkeyed_captions(md)
     print(f"pages    {pages(out)}")
     print(f"notes    {notes} set, {src_notes} defined in the sources" + ("" if notes >= src_notes else "  << notes lost"))
     print(f"figures  {figs} set, {src_figs} in the sources" + ("" if figs == src_figs else "  << check figures"))
     print(f"glyphs   " + ("no missing glyphs" if not missing else "MISSING GLYPHS: run vbook sweep"))
+    if long_caps:
+        print(f"captions {len(long_caps)} over {CAPTION_WORDS} words with no \"Labels:\" or \"Key:\", set whole in the List of Figures: "
+              + ", ".join(long_caps))
     return 1 if missing or notes < src_notes or figs != src_figs else 0
 
 

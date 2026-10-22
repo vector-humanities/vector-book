@@ -47,7 +47,7 @@
       }
       #if b.quote != none {
         align(center, text(10.5pt, style: "italic", b.quote))
-        if b.quote-source != none { v(3mm); align(center, text(8.5pt, tracking: 0.08em, b.quote-source)) }
+        if b.quote-source != none { v(3mm); align(center, tracked-line(8.5pt, b.quote-source)) }
         v(12mm)
       }
       #if b.blurb != none {
