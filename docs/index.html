@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vector Book</title>
+<meta name="description" content="Vector Book: book design and typesetting for vector humanities editions and translations. Four designs, from Markdown through Pandoc and Typst.">
+<link rel="icon" href="site/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Fira+Sans+Condensed:ital,wght@0,400;0,500;0,700;1,400&family=IBM+Plex+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #f6f2e9; --ground: #e7e3da; --ink: #141518; --soft: #5b5d66; --rule: #cfc9bc;
+  --electric: #1a1aff; --vermilion: #ff4a24; --mint: #bfe6d4; --pink: #f4c4d3; --gold: #9a7b2f;
+  --serif: "EB Garamond", Garamond, Georgia, serif;
+  --sans: "Fira Sans Condensed", "Arial Narrow", sans-serif;
+  --display: "Archivo Black", "Arial Black", sans-serif;
+  --mono: "IBM Plex Mono", Menlo, monospace;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 19px/1.55 var(--serif); }
+a { color: var(--electric); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+img { display: block; max-width: 100%; height: auto; }
+
+/* header */
+.bar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 18px;
+  padding: 10px 28px; background: rgba(246, 242, 233, .92); backdrop-filter: blur(6px); border-bottom: 1px solid var(--rule);
+  font: 500 15px/1 var(--sans); letter-spacing: .02em; }
+.bar img { width: 30px; height: 30px; }
+.bar .name { font-family: var(--display); font-size: 15px; letter-spacing: .03em; color: var(--ink); text-decoration: none; }
+.bar nav { margin-left: auto; display: flex; gap: 20px; flex-wrap: wrap; }
+.bar nav a { color: var(--ink); text-decoration: none; }
+.bar nav a:hover { color: var(--electric); }
+
+/* hero */
+.hero { position: relative; min-height: 86vh; overflow: hidden; border-bottom: 1px solid var(--ink); background: #fff; }
+.hero .field { position: absolute; inset: 0; width: 100%; height: 100%; }
+.hero .inner { position: relative; padding: 9vh 6vw 7vh; max-width: 1100px; }
+.hero h1 { margin: 0; font: 400 clamp(70px, 15vw, 210px)/.86 var(--display); letter-spacing: -.02em; text-transform: uppercase; }
+.hero .tag { margin: 34px 0 0; max-width: 540px; font: 500 clamp(20px, 2.1vw, 26px)/1.3 var(--sans); }
+.hero .tag span { background: #fff; box-decoration-break: clone; -webkit-box-decoration-break: clone; padding: 2px 6px; }
+.hero .links { margin-top: 30px; display: flex; gap: 12px; flex-wrap: wrap; }
+.btn { display: inline-block; padding: 11px 18px; font: 700 15px/1 var(--sans); letter-spacing: .04em; text-transform: uppercase;
+  text-decoration: none; color: #fff; background: var(--ink); border: 2px solid var(--ink); }
+.btn.alt { background: #fff; color: var(--ink); }
+.btn:hover { background: var(--electric); border-color: var(--electric); color: #fff; }
+
+/* sections */
+section { padding: 90px 6vw; border-bottom: 1px solid var(--rule); }
+section.ground { background: var(--ground); }
+.kicker { font: 700 13px/1 var(--sans); letter-spacing: .18em; text-transform: uppercase; color: var(--soft); margin: 0 0 14px; }
+h2 { margin: 0 0 22px; font: 400 clamp(40px, 6vw, 84px)/.92 var(--display); text-transform: uppercase; letter-spacing: -.01em; }
+.lede { max-width: 760px; font-size: 21px; margin: 0 0 40px; }
+.wide { max-width: 1500px; margin: 0 auto; }
+figure { margin: 0; }
+figcaption { margin-top: 10px; font: 15px/1.4 var(--sans); color: var(--soft); }
+.zoom { cursor: zoom-in; }
+
+/* designs */
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 28px; }
+.tab { font: 700 15px/1 var(--sans); letter-spacing: .06em; text-transform: uppercase; padding: 12px 18px;
+  background: transparent; color: var(--ink); border: 2px solid var(--ink); cursor: pointer; }
+.tab[aria-selected="true"] { background: var(--ink); color: #fff; }
+.tab:focus-visible { outline: 3px solid var(--electric); outline-offset: 2px; }
+.design { display: none; }
+.design.on { display: block; }
+.design .spec { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px 34px; margin: 0 0 30px;
+  font: 16px/1.45 var(--sans); }
+.design .spec b { display: block; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--soft); margin-bottom: 4px; }
+.design .shots { display: grid; gap: 26px; }
+.design p.note { max-width: 820px; }
+
+/* grids */
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 40px; }
+.detail { background: #fff; padding: 18px; border: 1px solid var(--rule); }
+.detail h3 { margin: 0 0 6px; font: 700 20px/1.2 var(--sans); }
+.detail p { margin: 0 0 14px; font: 16px/1.45 var(--sans); color: var(--soft); }
+
+/* field band */
+.band { height: 180px; overflow: hidden; border-bottom: 1px solid var(--ink); }
+.band img { width: 100%; height: 100%; object-fit: cover; }
+
+/* palettes */
+.chips { display: flex; gap: 10px; flex-wrap: wrap; margin: 0 0 26px; font: 14px/1 var(--mono); }
+.chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; background: #fff; border: 1px solid var(--rule); }
+.chip i { width: 16px; height: 16px; display: inline-block; border: 1px solid rgba(0,0,0,.2); }
+
+/* flow */
+.flow { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; border: 2px solid var(--ink); background: var(--ink); }
+.step { padding: 20px 18px 22px; background: #fff; }
+.step .n { font: 400 40px/1 var(--display); color: var(--electric); }
+.step h3 { margin: 10px 0 6px; font: 700 18px/1.2 var(--sans); text-transform: uppercase; letter-spacing: .04em; }
+.step p { margin: 0; font: 15px/1.45 var(--sans); color: var(--soft); }
+@media (max-width: 1150px) { .flow { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 640px) { .flow { grid-template-columns: 1fr; } }
+
+pre { margin: 0; padding: 22px 24px; background: var(--ink); color: #f1eee6; overflow-x: auto; font: 15px/1.6 var(--mono); }
+pre .c { color: #9c9aa6; }
+code { font: .86em var(--mono); background: rgba(0,0,0,.05); padding: 1px 5px; }
+
+footer { padding: 56px 6vw 70px; display: flex; gap: 28px; align-items: flex-start; flex-wrap: wrap; font: 16px/1.5 var(--sans); }
+footer img { width: 64px; }
+footer .cols { display: flex; gap: 50px; flex-wrap: wrap; }
+footer h4 { margin: 0 0 8px; font: 700 13px/1 var(--sans); letter-spacing: .16em; text-transform: uppercase; color: var(--soft); }
+footer ul { list-style: none; margin: 0; padding: 0; }
+
+/* lightbox */
+.lb { position: fixed; inset: 0; z-index: 50; display: none; background: rgba(20, 21, 24, .92); overflow: auto; cursor: zoom-out; }
+.lb.on { display: block; }
+.lb img { max-width: none; width: min(2000px, 160vw); margin: 40px auto; }
+.lb button { position: fixed; top: 16px; right: 20px; font: 700 15px/1 var(--sans); padding: 10px 14px; background: #fff; border: 0; cursor: pointer; }
+
+@media (max-width: 640px) {
+  body { font-size: 17px; }
+  .bar { padding: 10px 16px; }
+  .bar nav { display: none; }
+  section { padding: 64px 16px; }
+  .hero .inner { padding: 10vh 16px 8vh; }
+  .grid2 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <img src="site/mark.svg" alt="">
+  <a class="name" href="#top">VECTOR BOOK</a>
+  <nav aria-label="Sections">
+    <a href="#designs">Designs</a><a href="#wildcard">Wildcard</a><a href="#details">Details</a>
+    <a href="#prelims">Front matter</a><a href="#flow">From translation to book</a><a href="#use">Use</a>
+    <a href="https://github.com/vector-humanities/vector-book">GitHub</a>
+  </nav>
+</header>
+
+<main id="top">
+<div class="hero">
+  <img class="field" src="site/hero-field.svg" alt="">
+  <div class="inner">
+    <h1>Vector<br>Book</h1>
+    <p class="tag"><span>Book design and typesetting for vector humanities editions and translations. Markdown in, through Pandoc and Typst, a printed book out, in four designs.</span></p>
+    <div class="links">
+      <a class="btn" href="https://github.com/vector-humanities/vector-book">Source on GitHub</a>
+      <a class="btn alt" href="https://github.com/vector-humanities/vector-book/raw/main/examples/specimen/book/specimen.pdf">Specimen PDF</a>
+    </div>
+  </div>
+</div>
+
+<section>
+  <div class="wide">
+    <p class="kicker">Covers</p>
+    <h2>One book, every design</h2>
+    <p class="lede">A book is a folder of Markdown section files and a short <code>book.toml</code>. <code>vbook samples</code> sets the same book in every design, so the choice is made on the book's own pages. The first book was the vector translation of Kuki Shūzō's 偶然性の問題 (<i>The Problem of Contingency</i>, 1935), shown here with its frame cover after the 1948 Iwanami title page and with a field cover.</p>
+    <figure><img class="zoom" src="img/covers.png" alt="Covers: the specimen in classic, modern, kintsugi and wildcard, and the Kuki book with its frame cover and its field cover" loading="lazy"></figure>
+  </div>
+</section>
+
+<section id="designs" class="ground">
+  <div class="wide">
+    <p class="kicker">Four designs</p>
+    <h2>Designs</h2>
+    <div class="tabs" role="tablist" aria-label="Designs">
+      <button class="tab" role="tab" aria-selected="true" aria-controls="d-classic" id="t-classic">Classic</button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="d-modern" id="t-modern">Modern</button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="d-kintsugi" id="t-kintsugi">Kintsugi</button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="d-wildcard" id="t-wildcard">Wildcard</button>
+    </div>
+
+    <div class="design on" id="d-classic" role="tabpanel" aria-labelledby="t-classic">
+      <div class="spec">
+        <div><b>Page</b>156 × 234 mm, Royal octavo</div>
+        <div><b>Text</b>EB Garamond 10.5 pt, old-style figures; Gentium for Greek; Hiragino Mincho for Japanese</div>
+        <div><b>Headings</b>Centred small capitals; chapter titles never italic</div>
+        <div><b>Source pages</b>Small grey numbers in the outer margin, on the baseline of the line where each page begins</div>
+      </div>
+      <div class="shots">
+        <figure><img class="zoom" src="img/spread-classic.png" alt="Classic spread: the end of chapter 1 and the opening of chapter 2 with a figure" loading="lazy"><figcaption>The end of chapter 1 and the opening of chapter 2: a figure set at its size in the source, English glosses over its Japanese labels, a key beneath.</figcaption></figure>
+        <figure><img class="zoom" src="img/opening-classic.png" alt="Classic: the opening of chapter 1" loading="lazy"><figcaption>Chapter 1: number, title and original title; notes restarting at 1; margin page numbers.</figcaption></figure>
+      </div>
+    </div>
+
+    <div class="design" id="d-modern" role="tabpanel" aria-labelledby="t-modern">
+      <div class="spec">
+        <div><b>Page</b>156 × 234 mm</div>
+        <div><b>Text</b>Source Serif 4 10.5 pt</div>
+        <div><b>Headings</b>Source Sans 3 semibold in navy, set flush left</div>
+        <div><b>Source pages</b>Inline, as a small grey <code>[12]</code></div>
+      </div>
+      <div class="shots">
+        <figure><img class="zoom" src="img/spread-modern.png" alt="Modern spread: the end of chapter 1 and the opening of chapter 2" loading="lazy"><figcaption>A full-width rule above the notes; the scheme and table in the same sans as the headings.</figcaption></figure>
+        <figure><img class="zoom" src="img/opening-modern.png" alt="Modern: the opening of chapter 1" loading="lazy"><figcaption>Chapter 1, with source pages inline.</figcaption></figure>
+      </div>
+    </div>
+
+    <div class="design" id="d-kintsugi" role="tabpanel" aria-labelledby="t-kintsugi">
+      <div class="spec">
+        <div><b>Page</b>156 × 234 mm</div>
+        <div><b>Text</b>Crimson Pro 10.5 pt; Shippori Mincho for Japanese</div>
+        <div><b>Headings</b>Centred, in gold; section numbers as kanji (一, 二, …)</div>
+        <div><b>Rules</b>Gold hairlines under the running head and above the notes; figures between gold rules</div>
+      </div>
+      <div class="shots">
+        <figure><img class="zoom" src="img/spread-kintsugi.png" alt="Kintsugi spread: the end of chapter 1 and the opening of chapter 2, the figure between gold rules" loading="lazy"><figcaption>The figure set between gold rules, after the joins of kintsugi repair.</figcaption></figure>
+        <figure><img class="zoom" src="img/opening-kintsugi.png" alt="Kintsugi: the opening of chapter 1" loading="lazy"><figcaption>Chapter 1, its source page numbers in gold.</figcaption></figure>
+      </div>
+    </div>
+
+    <div class="design" id="d-wildcard" role="tabpanel" aria-labelledby="t-wildcard">
+      <div class="spec">
+        <div><b>Page</b>130 × 190 mm, a paperback</div>
+        <div><b>Text</b>Fira Sans Condensed 9.4 pt</div>
+        <div><b>Headings</b>Archivo capitals, stacked and broken across lines</div>
+        <div><b>Fields</b>A generated field page before every chapter, drawn from the book</div>
+      </div>
+      <div class="shots">
+        <figure><img class="zoom" src="img/spread-wildcard.png" alt="Wildcard spread: a field page facing the opening of chapter 2" loading="lazy"><figcaption>A field facing the opening of chapter 2.</figcaption></figure>
+        <figure><img class="zoom" src="img/opening-wildcard.png" alt="Wildcard: the opening of chapter 1, its title broken across four lines" loading="lazy"><figcaption>Chapter 1: CONVEN-TIONS OF THE TEXT.</figcaption></figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="band"><img src="site/band-field.svg" alt=""></div>
+
+<section id="wildcard">
+  <div class="wide">
+    <p class="kicker">The wildcard</p>
+    <h2>Fields drawn from the book</h2>
+    <p class="lede">Before every chapter the wildcard sets a field page: regions of solid ink with white stipple, a dotted contour, and colour, cut from a smooth noise surface seeded by the book's title and the chapter's place in it. The same book always draws the same fields, and no two books share one. On the cover the ink opens around the title, which Typst measures before the field is drawn, so the title never stands on black.</p>
+    <div class="chips" aria-label="Palettes">
+      <span class="chip"><i style="background:#bfe6d4"></i><i style="background:#f4c4d3"></i>mint-pink</span>
+      <span class="chip"><i style="background:#dcf25c"></i><i style="background:#a9ecff"></i>acid</span>
+      <span class="chip"><i style="background:#efdcb4"></i><i style="background:#bcd8f0"></i>sand-sky</span>
+      <span class="chip"><i style="background:#ffb199"></i><i style="background:#ffe08a"></i>coral</span>
+      <span class="chip"><i style="background:#b3b8ff"></i><i style="background:#ffc2b5"></i>electric</span>
+      <span class="chip"><i style="background:#fff"></i>mono</span>
+    </div>
+    <figure><img class="zoom" src="img/palettes.png" alt="The wildcard cover and a field page in six palettes" loading="lazy"><figcaption><code>field-palette</code> chooses the colours, <code>field-colours</code> sets your own, <code>field-ink</code> the solid regions: here black, and electric blue for the electric palette.</figcaption></figure>
+    <div style="height:40px"></div>
+    <figure><img class="zoom" src="img/wildcard-pages.png" alt="Wildcard title page, Contents and back cover" loading="lazy"><figcaption>Title page, Contents and back cover, the back in the field ink with its text in white or black to read on it.</figcaption></figure>
+  </div>
+</section>
+
+<section id="details" class="ground">
+  <div class="wide">
+    <p class="kicker">At print resolution</p>
+    <h2>Details</h2>
+    <div class="grid2">
+      <div class="detail">
+        <h3>Source pages in the margin</h3>
+        <p>A marker <code>[p. 12]</code> in the text becomes a small number in the outer margin, on the baseline of the line where page 12 of the source begins.</p>
+        <img class="zoom" src="img/detail-margin.png" alt="A margin page number beside the first line of a source page" loading="lazy">
+      </div>
+      <div class="detail">
+        <h3>Figures with glosses</h3>
+        <p>Figures at their size in the source; English glosses laid over their labels from a small JSON file; a key under the caption; a note in the caption kept out of the List of Figures.</p>
+        <img class="zoom" src="img/detail-figure.png" alt="A figure with English glosses over its Japanese labels" loading="lazy">
+      </div>
+      <div class="detail">
+        <h3>Schemes and tables</h3>
+        <p>A head joined to its branches by a brace, written as a fenced block; tables that break across pages, their columns sized to their contents.</p>
+        <img class="zoom" src="img/detail-scheme.png" alt="A brace scheme and a table" loading="lazy">
+      </div>
+      <div class="detail">
+        <h3>A field</h3>
+        <p>Part of a generated field: solid ink with white stipple, the dotted contour that runs beside it, colour beyond.</p>
+        <img class="zoom" src="img/detail-field.png" alt="Part of a generated field" loading="lazy">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="prelims">
+  <div class="wide">
+    <p class="kicker">Front matter</p>
+    <h2>The imprint page</h2>
+    <p class="lede">Title page, imprint page and Contents, all from <code>book.toml</code>. The imprint page carries the publisher's mark and series, edition, copyright and moral rights, the licence, material outside it, the AI disclosure, cataloguing lines, an ISBN for each format, the DOI, and a typesetting line Vector Book writes from the faces the book's characters reach.</p>
+    <figure><img class="zoom" src="img/prelims.png" alt="Classic title page, imprint page and Contents" loading="lazy"></figure>
+  </div>
+</section>
+
+<section id="flow" class="ground">
+  <div class="wide">
+    <p class="kicker">Vector Translation, stage 7</p>
+    <h2>From translation to book</h2>
+    <p class="lede">A finished vector translation passes to Vector Book through one manifest, and comes back through numbered returns. The book side never edits the text; the translation side applies every correction to its literal and readable versions together.</p>
+    <div class="flow">
+      <div class="step"><div class="n">1</div><h3>Text gate</h3><p>The translation's checks pass and the translator signs off the text.</p></div>
+      <div class="step"><div class="n">2</div><h3>Manifest</h3><p><code>book.toml</code>: the translation side writes the book and its sources, the design side the design and covers, the publisher the imprint.</p></div>
+      <div class="step"><div class="n">3</div><h3>Build</h3><p><code>vbook check --report</code> writes the book and a build report: notes and figures set against the sources, missing glyphs.</p></div>
+      <div class="step"><div class="n">4</div><h3>Returns</h3><p><code>vbook return</code> writes located faults for the translation side; the translation side checks the PDF word by word in return.</p></div>
+      <div class="step"><div class="n">5</div><h3>Book gate</h3><p>Every return and check closed; the translator signs off the book with the Vector Book commit.</p></div>
+      <div class="step"><div class="n">6</div><h3>Identifiers</h3><p>ISBN and DOI last; the book is rebuilt with them and released.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="use">
+  <div class="wide">
+    <p class="kicker">Use</p>
+    <h2>Commands</h2>
+    <p class="lede">Python 3.11 or later with its standard library, Pandoc 3, Typst 0.13 or later, and the fonts of the chosen design, all of them open except Hiragino.</p>
+<pre><span class="c"># start, build, check</span>
+./vbook new mybook
+./vbook build mybook
+./vbook check mybook --report     <span class="c"># notes, figures, glyphs; book/BUILD.md</span>
+./vbook sweep mybook              <span class="c"># every non-ASCII character against the font stack</span>
+./vbook samples mybook            <span class="c"># the book in every design, side by side</span>
+./vbook proof mybook              <span class="c"># a contact sheet of the pages</span>
+./vbook return mybook             <span class="c"># located faults for the translation side</span></pre>
+    <p style="margin-top:26px">Documentation on GitHub: <a href="https://github.com/vector-humanities/vector-book/blob/main/docs/conventions.md">conventions</a>, <a href="https://github.com/vector-humanities/vector-book/blob/main/docs/config.md">configuration</a>, <a href="https://github.com/vector-humanities/vector-book/blob/main/docs/handover.md">handover</a>, <a href="https://github.com/vector-humanities/vector-book/blob/main/docs/practice.md">practice</a>.</p>
+  </div>
+</section>
+</main>
+
+<footer>
+  <img src="site/vh-mark.svg" alt="Vector Humanities">
+  <div class="cols">
+    <div><h4>Vector Book</h4><ul><li>A Vector Humanities tool</li><li>Alpha, October 2026</li><li>GNU GPL, version 3 or later</li></ul></div>
+    <div><h4>Links</h4><ul><li><a href="https://github.com/vector-humanities/vector-book">Repository</a></li><li><a href="https://vector-humanities.github.io">Vector Humanities</a></li></ul></div>
+  </div>
+</footer>
+
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Image at full size"><button type="button">Close</button><img alt=""></div>
+
+<script>
+// design tabs
+const tabs = [...document.querySelectorAll('.tab')];
+function show(tab) {
+  tabs.forEach(t => {
+    const on = t === tab;
+    t.setAttribute('aria-selected', on);
+    document.getElementById(t.getAttribute('aria-controls')).classList.toggle('on', on);
+  });
+}
+tabs.forEach((t, i) => {
+  t.addEventListener('click', () => show(t));
+  t.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      const n = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+      n.focus(); show(n);
+    }
+  });
+});
+if (location.hash === '#wildcard-design') show(document.getElementById('t-wildcard'));
+
+// lightbox
+const lb = document.getElementById('lb'), lbImg = lb.querySelector('img');
+document.querySelectorAll('img.zoom').forEach(img => img.addEventListener('click', () => {
+  lbImg.src = img.src; lbImg.alt = img.alt; lb.classList.add('on'); lb.querySelector('button').focus();
+}));
+const close = () => lb.classList.remove('on');
+lb.addEventListener('click', close);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+</script>
+</body>
+</html>
