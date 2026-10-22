@@ -178,17 +178,16 @@
     let ps = parts.pos().filter(p => p != none and p != [] and p != ())
     if ps.len() > 0 { block(above: 1.4em, below: 0pt, stack(spacing: 0.7em, ..ps)) }
   }
-  #if im.logo != none or im.publisher != none {
-    if im.logo != none { image(im.logo.image, width: im.logo.width); v(2mm) }
-    if im.publisher != none { text(9pt, tracking: 0.06em, upper(im.publisher)); linebreak() }
-    if im.place != none { im.place; linebreak() }
-    if im.url != none { link(im.url, im.url.replace(regex("^https?://"), "")) }
-    if im.series != none {
-      v(0.6em)
-      emph(im.series)
-      if im.series-number != none [ #im.series-number]
-    }
+  // head of the page: logo, series, publisher, then place and address
+  #if im.logo != none { image(im.logo.image, width: im.logo.width); v(2mm) }
+  #if im.series != none {
+    text(9pt, tracking: 0.06em, upper(im.series))
+    if im.series-number != none { text(9pt, tracking: 0.06em, number-type: "lining", [ #im.series-number]) }
+    linebreak()
   }
+  #if im.publisher != none { text(9pt, tracking: 0.06em, upper(im.publisher)); linebreak() }
+  #if im.place != none { im.place; linebreak() }
+  #if im.url != none { link(im.url, im.url.replace(regex("^https?://"), "")) }
   #v(1fr)
   #if meta.credits != [] { meta.credits }
   #group(im.edition,

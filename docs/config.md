@@ -76,13 +76,13 @@ Use TOML's single-quoted strings for regular expressions, so that backslashes ar
 
 ## [imprint]
 
-The imprint page, on the back of the title page. The publisher stands at the head of the page; `credits` from `[book]` and the fields below stand at the foot, in this order. Every field is optional and a missing one leaves no gap. In a series, the publisher's side writes this table.
+The imprint page, on the back of the title page. The head of the page reads, from the top: the logo, the series name in tracked capitals (with its number, if set, in lining figures), the publisher in tracked capitals, then place and web address. `credits` from `[book]` and the fields below stand at the foot, in this order. Every field is optional and a missing one leaves no gap. In a series, the publisher's side writes this table.
 
 | Key | |
 |---|---|
-| `publisher`, `publisher-place`, `publisher-url` | The imprint or series publishing the book |
+| `publisher`, `publisher-place`, `publisher-url` | The publisher (e.g. Vector Humanities), under the series name |
 | `publisher-logo` | `{ image = "…", width = "14mm" }` |
-| `series`, `series-number` | Series title and number, under the publisher |
+| `series`, `series-number` | Series name, above the publisher, and the book's number in the series |
 | `edition` | *Markdown.* "First published 2026", "Preliminary edition, 2026" |
 | `copyright` | List of *Markdown* lines: "Translation © … 2026", "Original text: public domain" |
 | `moral-rights` | *Markdown.* The assertion of the author's or translator's right to be identified |
