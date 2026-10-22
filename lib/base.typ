@@ -168,17 +168,41 @@
   ]
 ] }
 
+// The imprint page, facing the title page: publisher at the head; edition, rights, cataloguing,
+// identifiers and typesetting at the foot. Every part is optional.
 #let base-credits-page(meta) = plain-page[
-  #v(1fr)
+  #let im = meta.imprint
   #set text(8.2pt)
-  #set par(first-line-indent: 0em, justify: false, spacing: 1em)
-  #meta.credits
-  #if meta.licence != none { v(0.4em); meta.licence }
-  #if meta.isbn != none or meta.doi != none {
-    v(0.4em)
-    if meta.isbn != none [ISBN #meta.isbn \ ]
-    if meta.doi != none { [DOI ]; link("https://doi.org/" + meta.doi, "https://doi.org/" + meta.doi) }
+  #set par(first-line-indent: 0em, justify: false, spacing: 0.9em, leading: 0.5em)
+  #let group(..parts) = {
+    let ps = parts.pos().filter(p => p != none and p != [] and p != ())
+    if ps.len() > 0 { block(above: 1.4em, below: 0pt, stack(spacing: 0.7em, ..ps)) }
   }
+  #if im.logo != none or im.publisher != none {
+    if im.logo != none { image(im.logo.image, width: im.logo.width); v(2mm) }
+    if im.publisher != none { text(9pt, tracking: 0.06em, upper(im.publisher)); linebreak() }
+    if im.place != none { im.place; linebreak() }
+    if im.url != none { link(im.url, im.url.replace(regex("^https?://"), "")) }
+    if im.series != none {
+      v(0.6em)
+      emph(im.series)
+      if im.series-number != none [ #im.series-number]
+    }
+  }
+  #v(1fr)
+  #if meta.credits != [] { meta.credits }
+  #group(im.edition,
+    if im.copyright.len() > 0 { stack(spacing: 0.45em, ..im.copyright) },
+    im.moral-rights)
+  #group(im.licence, im.third-party, im.ai)
+  #group(
+    if im.catalogue.len() > 0 { stack(spacing: 0.45em, ..im.catalogue) },
+    if im.isbn.len() > 0 or im.doi != none {
+      stack(spacing: 0.45em,
+        ..im.isbn.map(((k, v)) => [ISBN #v#if k != "" [ (#k)]]),
+        ..if im.doi != none { ([DOI #link("https://doi.org/" + im.doi, "https://doi.org/" + im.doi)],) } else { () })
+    })
+  #group(im.typeset, im.other)
 ]
 
 #let base-frontispiece(meta) = if meta.frontispiece != none {

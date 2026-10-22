@@ -10,14 +10,18 @@ credit = "Vector Book · Vector Humanities"
 affiliation = "vector-humanities.github.io"
 output = "book/specimen.pdf"
 credits = """
-*A Vector Book Specimen*. Set with Vector Book, the book design tool of Vector Humanities, from Markdown section files through Pandoc and Typst. The design is the one first made for the vector translation of Kuki Shūzō's 偶然性の問題 (*The Problem of Contingency*, 1935).
-
-The Japanese verse is Matsuo Bashō's, the Greek is Heraclitus as transmitted by Heraclitus Homericus; both are in the public domain. The figure was drawn for this specimen.
+*A Vector Book Specimen*. The design is the one first made for the vector translation of Kuki Shūzō's 偶然性の問題 (*The Problem of Contingency*, 1935).
 
 Numbers in the outer margin give the pages of a notional source edition. Footnotes are the translator's; insertions into the source text are set in tortoise-shell brackets, 〔 〕.
-
-Released under the GNU General Public License, version 3 or later.
 """
+
+[imprint]
+publisher = "Vector Humanities"
+publisher-url = "https://vector-humanities.github.io"
+edition = "Specimen edition, 2026"
+licence = "Released under the GNU General Public License, version 3 or later, with the Vector Book source."
+third-party = "The Japanese verse is Matsuo Bashō's and the Greek is Heraclitus as transmitted by Heraclitus Homericus; both are in the public domain. The figure was drawn for this specimen."
+other = "Source files: `examples/specimen/` in the Vector Book repository."
 
 [design]
 template = "classic"

@@ -101,6 +101,15 @@
   body
 })
 
+// The ISBN for the back cover: the print one if the book has several, set below the panel
+#let back-isbn(meta, dy: 12mm) = {
+  let isbns = meta.imprint.isbn
+  if isbns.len() == 0 { return }
+  let pick = isbns.find(((k, v)) => lower(k) in ("paperback", "print", "hardback", "hardcover"))
+  let (k, v) = if pick != none { pick } else { isbns.at(0) }
+  place(bottom + center, dy: dy, text(7.5pt, tracking: 0.06em, [ISBN #v]))
+}
+
 // A page of generated preliminaries: no running head, no folio
 #let plain-page(body, ..args) = page(header: none, footer: none, ..args, body)
 

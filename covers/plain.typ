@@ -37,7 +37,7 @@
     #align(center)[
       #if meta.credit != none { text(9pt, tracking: 0.05em, meta.credit) }
       #if meta.affiliation != none { v(1mm); text(8pt, meta.affiliation) }
-      #if meta.isbn != none { v(3mm); text(7.5pt, tracking: 0.06em, [ISBN #meta.isbn]) }
     ]
+    #back-isbn(meta, dy: 14mm)
   ]
 }

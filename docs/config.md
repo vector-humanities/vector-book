@@ -13,10 +13,7 @@ Every key, with its default. Strings marked *Markdown* may use emphasis and line
 | `running-title` | `title` | Running head on versos |
 | `credit` | none | *Markdown.* Title page and covers, e.g. "A Vector Translation Project by …" |
 | `affiliation` | none | Back cover, under the credit |
-| `credits` | none | *Markdown, paragraphs.* The page facing the title page: edition translated, library and identifier, image credits, conventions |
-| `licence` | none | *Markdown.* Licence statement on the credits page, e.g. `"This work is licensed under a [Creative Commons Attribution 4.0 International Licence](https://creativecommons.org/licenses/by/4.0/) (CC BY 4.0)."` |
-| `isbn` | none | Printed on the credits page and the back cover; added as the last step before publication |
-| `doi` | none | Printed on the credits page as a link, e.g. `"10.5281/zenodo.1234567"` |
+| `credits` | none | *Markdown, paragraphs.* About this edition, at the foot of the imprint page: edition translated, library and identifier, image credits, conventions |
 | `lang`, `region` | `"en"`, `"gb"` | Hyphenation and quotation marks |
 | `output` | `"book/book.pdf"` | Where the PDF is written |
 
@@ -76,6 +73,29 @@ Each character is set in the first font of the stack that has it. Put the Latin 
 | `strip` | `[]` | Regular expressions removed from the book, e.g. `'\[コマ [^\]]*\]'` for image numbers |
 
 Use TOML's single-quoted strings for regular expressions, so that backslashes are kept.
+
+## [imprint]
+
+The imprint page, on the back of the title page. The publisher stands at the head of the page; `credits` from `[book]` and the fields below stand at the foot, in this order. Every field is optional and a missing one leaves no gap. In a series, the publisher's side writes this table.
+
+| Key | |
+|---|---|
+| `publisher`, `publisher-place`, `publisher-url` | The imprint or series publishing the book |
+| `publisher-logo` | `{ image = "…", width = "14mm" }` |
+| `series`, `series-number` | Series title and number, under the publisher |
+| `edition` | *Markdown.* "First published 2026", "Preliminary edition, 2026" |
+| `copyright` | List of *Markdown* lines: "Translation © … 2026", "Original text: public domain" |
+| `moral-rights` | *Markdown.* The assertion of the author's or translator's right to be identified |
+| `licence` | *Markdown.* E.g. `"This work is licensed under a [Creative Commons Attribution 4.0 International Licence](https://creativecommons.org/licenses/by/4.0/) (CC BY 4.0)."` |
+| `third-party` | *Markdown.* Material outside the licence, and its credits |
+| `ai` | *Markdown.* AI disclosure |
+| `catalogue` | List of *Markdown* lines: British Library and Library of Congress cataloguing statements, as the libraries supply them |
+| `isbn` | One ISBN as a string, or one per format: `{ pdf = "…", paperback = "…" }`. On the back cover below the panel: the print ISBN if there is one, otherwise the first |
+| `doi` | Printed as a link, e.g. `"10.5281/zenodo.1234567"` |
+| `typeset` | Default: a line Vector Book writes from the fonts this book's characters reach ("Typeset in EB Garamond 12, Gentium Book Plus and Hiragino Mincho ProN with Vector Book."). A string replaces it; `false` leaves it out |
+| `other` | *Markdown.* Cover design, printer, anything else |
+
+Identifiers come last: `isbn` and `doi` are added when the book is published, and the book is rebuilt.
 
 ## [frontispiece]
 

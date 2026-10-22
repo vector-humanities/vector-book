@@ -34,7 +34,7 @@ NEVER = "\ue000\ue001"  # a pattern that never matches, for books with no protec
 DEFAULTS = {
     "book": {"title": "Untitled", "subtitle": None, "author": None, "original-title": None,
              "running-title": None, "credit": None, "affiliation": None, "credits": None,
-             "lang": "en", "region": "gb", "output": "book/book.pdf", "isbn": None, "doi": None, "licence": None},
+             "lang": "en", "region": "gb", "output": "book/book.pdf", },
     "design": {"template": "classic", "cover": "frame", "page": {}, "fonts": {},
                "no-hyphen": [], "end-blanks": 0, "figure-dpi": 300, "notes": "chapter"},
     "sources": {"front": [], "body": ["text/*.md"], "back": [], "glossary": None,
@@ -43,6 +43,10 @@ DEFAULTS = {
                 "glossary-title": "Glossary", "overlays": "figures/overlays.json",
                 "parse-headings": False, "shift-headings": 0, "handover": "partial", "bibliography": None, "csl": None},
     "markers": {"page": r"\[p\. (\d+)\]", "strip": []},
+    "imprint": {"publisher": None, "publisher-place": None, "publisher-url": None, "publisher-logo": None,
+                "series": None, "series-number": None, "edition": None, "copyright": [], "moral-rights": None,
+                "licence": None, "third-party": None, "ai": None, "catalogue": [], "isbn": None, "doi": None,
+                "typeset": True, "other": None},
     "frontispiece": None,
     "cover": {"paper": "#efe8d8", "ink": "#1f1b16", "accent": "#a8873c", "frame": None},
     "back": {"portrait": None, "quote": None, "quote-source": None, "blurb": None},
@@ -58,7 +62,7 @@ TEMPLATE_DEFAULTS = {
                "top": "20mm", "bottom": "22mm", "size": "10.5pt",
                "text": ["Source Serif 4", "Gentium Book Plus", "Hiragino Mincho ProN", "Noto Serif JP",
                         "STIX Two Text", "STIX Two Math", "Apple Symbols"],
-               "mono": ["Menlo", "DejaVu Sans Mono", "Hiragino Mincho ProN"]},
+               "mono": ["Menlo", "DejaVu Sans Mono", "Hiragino Mincho ProN"], "display": "Source Sans 3"},
     "kintsugi": {"width": "156mm", "height": "234mm", "inside": "22mm", "outside": "24mm",
                  "top": "20mm", "bottom": "22mm", "size": "10.5pt",
                  "text": ["Crimson Pro", "Gentium Book Plus", "Shippori Mincho", "Noto Serif JP",
@@ -97,6 +101,9 @@ def load(root, template=None):
         if not LENGTH.match(str(v)):
             die(f"design.page.{k} = {v!r} is not a length such as 156mm or 10.5pt")
     cfg["_page"] = page
+    for k in ("isbn", "doi", "licence"):          # first placed in [book]; they belong to the imprint page
+        if cfg["book"].get(k) and not cfg["imprint"].get(k):
+            cfg["imprint"][k] = cfg["book"][k]
     if cfg["design"]["notes"] not in ("chapter", "book"):
         die('design.notes should be "chapter" or "book"')
     cfg["_fonts"] = {k: cfg["design"]["fonts"].get(k, td[k]) for k in ("text", "mono")}
@@ -214,6 +221,51 @@ def image_dict(d, root, what):
     return f'(image: "/{img}", width: {w}, caption: {md2ty(d.get("caption"))})'
 
 
+CJK_FACES = ("mincho", "gothic", " jp", "han", "song", "ming", "kaku")
+
+
+def typeset_line(root, cfg):
+    """'Typeset in … with Vector Book', naming the faces this book's characters reach."""
+    md, _ = assemble(root, cfg)
+    text = cfg["_fonts"]["text"]
+    faces = [text[0]]
+    disp = TEMPLATE_DEFAULTS[cfg["design"]["template"]].get("display")
+    if disp and disp not in faces:
+        faces.append(disp)
+    if any("\u0370" <= c <= "\u03ff" or "\u1f00" <= c <= "\u1fff" for c in md) and "Gentium Book Plus" in text:
+        faces.append("Gentium Book Plus")
+    if any("\u3000" <= c <= "\u9fff" for c in md):
+        faces += [f for f in text if any(k in f.lower() for k in CJK_FACES)][:1]
+    names = faces[0] if len(faces) == 1 else ", ".join(faces[:-1]) + " and " + faces[-1]
+    return f"Typeset in {names} with Vector Book."
+
+
+def imprint_typ(root, cfg):
+    im = cfg["imprint"]
+    isbn = im["isbn"]
+    if isinstance(isbn, dict):
+        isbns = [(k, v) for k, v in isbn.items()]
+    else:
+        isbns = [("", isbn)] if isbn else []
+    typeset = im["typeset"]
+    if typeset is True:
+        typeset = typeset_line(root, cfg)
+    lines = lambda xs: "(" + "".join(md2ty(x) + ", " for x in (xs or [])) + ")"
+    fields = {
+        "publisher": md2ty(im["publisher"]), "place": md2ty(im["publisher-place"]),
+        "url": tystr(im["publisher-url"]) if im["publisher-url"] else "none",
+        "logo": image_dict(im["publisher-logo"], root, "imprint.publisher-logo") if im["publisher-logo"] else "none",
+        "series": md2ty(im["series"]), "series-number": md2ty(str(im["series-number"]) if im["series-number"] else None),
+        "edition": md2ty(im["edition"]), "copyright": lines(im["copyright"]), "moral-rights": md2ty(im["moral-rights"]),
+        "licence": md2ty(im["licence"]), "third-party": md2ty(im["third-party"]), "ai": md2ty(im["ai"]),
+        "catalogue": lines(im["catalogue"]),
+        "isbn": "(" + "".join(f"({tystr(k)}, {tystr(v)}), " for k, v in isbns) + ")",
+        "doi": tystr(im["doi"]) if im["doi"] else "none",
+        "typeset": md2ty(typeset) if typeset else "none", "other": md2ty(im["other"]),
+    }
+    return "(" + ", ".join(f"{k}: {v}" for k, v in fields.items()) + ")"
+
+
 def meta_typ(root, cfg):
     b, d, c, bk = cfg["book"], cfg["design"], cfg["cover"], cfg["back"]
     pg = cfg["_page"]
@@ -231,9 +283,7 @@ def meta_typ(root, cfg):
         "running-title": md2ty(b["running-title"] or b["title"]),
         "credit": md2ty(b["credit"]),
         "affiliation": md2ty(b["affiliation"]),
-        "isbn": tystr(b["isbn"]) if b["isbn"] else "none",
-        "doi": tystr(b["doi"]) if b["doi"] else "none",
-        "licence": md2ty(b["licence"]),
+        "imprint": imprint_typ(root, cfg),
         "credits": md2ty(b["credits"]) if b["credits"] else "[]",
         "lang": tystr(b["lang"]),
         "region": tystr(b["region"]),
