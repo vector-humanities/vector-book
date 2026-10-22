@@ -89,7 +89,7 @@ The imprint page, on the back of the title page. The head of the page reads, fro
 | `moral-rights` | *Markdown.* The assertion of the author's or translator's right to be identified |
 | `licence` | *Markdown.* E.g. `"This work is licensed under a [Creative Commons Attribution 4.0 International Licence](https://creativecommons.org/licenses/by/4.0/) (CC BY 4.0)."` |
 | `third-party` | *Markdown.* Material outside the licence, and its credits |
-| `ai` | *Markdown.* AI disclosure |
+| `ai` | *Markdown.* AI disclosure. For a vector translation in the Vector Humanities series: `"This is a vector translation."` (the Translator's Note describes the method) |
 | `catalogue` | List of *Markdown* lines: British Library and Library of Congress cataloguing statements, as the libraries supply them |
 | `isbn` | One ISBN as a string, or one per format: `{ pdf = "…", paperback = "…" }`. On the back cover below the panel: the print ISBN if there is one, otherwise the first |
 | `doi` | Printed as a link, e.g. `"10.5281/zenodo.1234567"` |
