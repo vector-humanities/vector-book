@@ -173,6 +173,11 @@
   #set text(8.2pt)
   #set par(first-line-indent: 0em, justify: false, spacing: 1em)
   #meta.credits
+  #if meta.isbn != none or meta.doi != none {
+    v(0.4em)
+    if meta.isbn != none [ISBN #meta.isbn \ ]
+    if meta.doi != none { [DOI ]; link("https://doi.org/" + meta.doi, "https://doi.org/" + meta.doi) }
+  }
 ]
 
 #let base-frontispiece(meta) = if meta.frontispiece != none {

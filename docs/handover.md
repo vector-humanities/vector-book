@@ -101,7 +101,7 @@ A book is ready for the translator's sign-off when:
 2. the latest `vt_bookcheck.py` run has no open findings;
 3. every `return-NN.md` and every `check-NN.md` in `proof/` is CLOSED.
 
-The translator then signs off the book in `STATUS.md`, with the date, the Vector Book commit from `BUILD.md`, and the PDF.
+The translator then signs off the book in `STATUS.md`, with the date, the Vector Book commit from `BUILD.md`, and the PDF. Identifiers come last: when a book is published, its ISBN and DOI go into `[book] isbn` and `doi`, and the book is rebuilt and checked once more before release. Legal deposit is an option at the end, decided per book.
 
 ## Running the tool
 

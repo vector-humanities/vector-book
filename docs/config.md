@@ -14,6 +14,8 @@ Every key, with its default. Strings marked *Markdown* may use emphasis and line
 | `credit` | none | *Markdown.* Title page and covers, e.g. "A Vector Translation Project by …" |
 | `affiliation` | none | Back cover, under the credit |
 | `credits` | none | *Markdown, paragraphs.* The page facing the title page: edition translated, library and identifier, image credits, conventions |
+| `isbn` | none | Printed on the credits page and the back cover; added as the last step before publication |
+| `doi` | none | Printed on the credits page as a link, e.g. `"10.5281/zenodo.1234567"` |
 | `lang`, `region` | `"en"`, `"gb"` | Hyphenation and quotation marks |
 | `output` | `"book/book.pdf"` | Where the PDF is written |
 
