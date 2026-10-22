@@ -25,6 +25,32 @@ Needs Python 3.11+, Pandoc 3 and Typst 0.13 or later.
 
 The specimen in [`examples/specimen/`](examples/specimen/) shows every convention and builds to [`examples/specimen/book/specimen.pdf`](examples/specimen/book/specimen.pdf).
 
+## Documentation
+
+| | |
+|---|---|
+| [`docs/conventions.md`](docs/conventions.md) | What the Markdown says: chapters, page markers, notes, insertions, verse, figures and overlays, schemes, tables, glossary |
+| [`docs/config.md`](docs/config.md) | Every key in `book.toml` |
+| [`docs/practice.md`](docs/practice.md) | How to make a book, from what the Kuki book needed, with the faults met and how the tool handles them |
+| [`AGENTS.md`](AGENTS.md) | Instructions for agents working on this repository |
+
+Vector Book is stage 7 of the Vector Translation method, and serves editions as well as translations.
+
+## Layout
+
+```
+vbook                command
+lib/                 Pandoc Lua filter and shared Typst functions
+templates/           page designs (classic)
+covers/              frame and plain covers
+starter/             the project vbook new copies
+examples/specimen/   a book that uses every convention
+docs/                conventions, configuration, practice
+brand/               the mark and its generator
+```
+
 ## Status
 
-First version, October 2026. The full Kuki book builds through it (all 473 notes and 22 figures set, no missing glyphs). Documentation of the conventions and configuration, the practices distilled from the Kuki book, further templates and a facing-page layout are in progress.
+Alpha, October 2026. The full Kuki book builds through it: 473 notes and 22 figures set, no missing glyphs. To come: the Modern and Kintsugi designs from the Kuki samples, a facing-page layout for literal and readable versions, EPUB and HTML output, and open CJK fonts for builds away from macOS.
+
+Licence: GNU General Public License, version 3 or later.

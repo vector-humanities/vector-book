@@ -163,8 +163,8 @@ def assemble(root, cfg):
 
 # ---- Typst values
 
-def md2ty(md, block=False):
-    if md is None:
+def md2ty(md):
+    if md is None or not str(md).strip():
         return "none"
     out = run(["pandoc", "-f", "markdown-auto_identifiers", "-t", "typst", "--wrap=none"], input=str(md)).stdout.strip()
     return "[" + out + "]"

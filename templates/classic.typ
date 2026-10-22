@@ -79,6 +79,8 @@
   show list: set par(first-line-indent: 0em)
   set list(indent: 0.6em, body-indent: 0.5em)
   show enum: set par(first-line-indent: 0em)
+  // references from Pandoc's citeproc, in a ::: {#refs} block
+  show <refs>: set par(first-line-indent: 0em, hanging-indent: 1.5em, justify: false, spacing: 0.7em)
 
   // outlines: one block per entry; chapter numbers before titles
   show outline: it => { vb-in-outline.update(true); it; vb-in-outline.update(false) }
