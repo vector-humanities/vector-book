@@ -25,7 +25,7 @@ covers/*.typ         covers; each exports front() and back()
 starter/             the project vbook new copies
 examples/specimen/   a book that uses every convention
 docs/                documentation; img/ gallery (made by docs/src/gallery.py); index.html and site/: the GitHub Pages site
-brand/               the mark and its generator (brand/src/mark.py)
+brand/               the mark and its generator (brand/src/mark.py); the vectors share card (brand/src/card.py, copied to docs/site/card.png)
 ```
 
 A build copies `lib/`, `templates/` and `covers/` into the book's `build/.vbook/`, so that Typst's root is the book folder. `build/` is generated and ignored.
