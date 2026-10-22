@@ -44,7 +44,7 @@ DEFAULTS = {
                 "parse-headings": False, "shift-headings": 0, "handover": "partial", "bibliography": None, "csl": None},
     "markers": {"page": r"\[p\. (\d+)\]", "strip": []},
     "imprint": {"publisher": None, "publisher-place": None, "publisher-url": None, "publisher-logo": None,
-                "series": None, "series-number": None, "series-style": "roman", "edition": None, "copyright": [], "moral-rights": None,
+                "series": None, "series-number": None, "series-style": "italic", "edition": None, "copyright": [], "moral-rights": None,
                 "licence": None, "third-party": None, "ai": None, "catalogue": [], "isbn": None, "doi": None,
                 "typeset": True, "other": None},
     "frontispiece": None,

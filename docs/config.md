@@ -83,7 +83,7 @@ The imprint page, on the back of the title page. The head of the page reads, fro
 | `publisher`, `publisher-place`, `publisher-url` | The publisher (e.g. Vector Humanities), under the series name |
 | `publisher-logo` | `{ image = "…", width = "14mm" }` |
 | `series`, `series-number` | Series name, above the publisher, and the book's number in the series |
-| `series-style` | `"roman"` (default), `"italic"` or `"caps"`: how the series name is set |
+| `series-style` | `"italic"` (default; the Vector Humanities series), `"roman"` or `"caps"`: how the series name is set, in upper and lower case unless `"caps"` |
 | `edition` | *Markdown.* "First published 2026", "Preliminary edition, 2026" |
 | `copyright` | List of *Markdown* lines: "Translation © … 2026", "Original text: public domain" |
 | `moral-rights` | *Markdown.* The assertion of the author's or translator's right to be identified |
