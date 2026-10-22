@@ -21,7 +21,7 @@ Every key, with its default. Strings marked *Markdown* may use emphasis and line
 
 | Key | Default | |
 |---|---|---|
-| `template` | `"classic"` | Page design; see `templates/` |
+| `template` | `"classic"` | Page design: `classic`, `modern` or `kintsugi` (see Templates below) |
 | `cover` | `"frame"` | `frame` (ruled frame with vertical text, after the 1948 Iwanami title page) or `plain` |
 | `page` | the template's | Table of `width`, `height`, `inside`, `outside`, `top`, `bottom`, `size` (body type size) |
 | `fonts.text` | the template's | Font stack for the text, in order of preference |
@@ -30,7 +30,19 @@ Every key, with its default. Strings marked *Markdown* may use emphasis and line
 | `end-blanks` | `0` | Pages marked "Page left deliberately blank" before the back cover |
 | `figure-dpi` | `300` | Resolution at which figure images are sized |
 
-The classic template's defaults: 156 × 234 mm (Royal octavo); margins inside 22, outside 26, top 22, bottom 24 mm; 10.5 pt; text stack EB Garamond 12, Gentium Book Plus, Hiragino Mincho ProN, Noto Serif JP, STIX Two Text, STIX Two Math, Apple Symbols; mono stack Menlo, DejaVu Sans Mono, Hiragino Mincho ProN.
+## Templates
+
+The three designs offered for the Kuki book. `vbook samples` builds a book in each and sets matching pages side by side in `build/samples.png`, with the full PDFs in `build/samples/`. Each sample uses its template's own page and fonts, whatever `book.toml` overrides.
+
+| Template | Kuki sample | Design | Page and margins | Text stack |
+|---|---|---|---|---|
+| `classic` | A, Classic scholarly (chosen for Kuki) | EB Garamond; centred small-capital headings; source pages in the outer margin; 28% note rule | 156 × 234 mm; inside 22, outside 26, top 22, bottom 24 mm | EB Garamond 12, Gentium Book Plus, Hiragino Mincho ProN, Noto Serif JP, STIX Two Text, STIX Two Math, Apple Symbols |
+| `modern` | B, Modern academic | Source Serif 4 text; Source Sans 3 semibold headings in navy, left-aligned; source pages inline as small grey `[N]`; full-width navy note rule | 156 × 234 mm; inside 22, outside 24, top 20, bottom 22 mm | Source Serif 4, Gentium Book Plus, Hiragino Mincho ProN, Noto Serif JP, STIX Two Text, STIX Two Math, Apple Symbols |
+| `kintsugi` | C, Kintsugi | Crimson Pro and Shippori Mincho; centred gold headings; section numbers as kanji (一, 二, …); gold hairline under the running head and above the notes; figures between gold rules; source pages in gold in the margin | as `modern` | Crimson Pro, Gentium Book Plus, Shippori Mincho, Noto Serif JP, STIX Two Text, STIX Two Math, Apple Symbols |
+
+All three set 10.5 pt body type; the mono stack is Menlo, DejaVu Sans Mono and the template's Mincho. Kintsugi turns a section heading that begins with a number and a full stop (`## 3. The Three Modes`) into its kanji numeral.
+
+Fonts not on the system are open fonts available from Google Fonts or as Homebrew casks (`font-source-serif-4`, `font-source-sans-3`, `font-crimson-pro`, `font-shippori-mincho`). Typst sets the variable Source Serif 4 at its default optical size (20 pt); its text is a little more open than the 10.5 pt optical size a browser would choose.
 
 Each character is set in the first font of the stack that has it. Put the Latin face first, then a face with full diacritics and Greek, then the CJK face, then symbols. Run `vbook sweep` after any change to the stack or the text's character set.
 

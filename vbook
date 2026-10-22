@@ -7,6 +7,7 @@
     vbook check [DIR]          page, note and figure counts; missing glyphs
     vbook sweep [DIR]          glyph sweep: every non-ASCII character, checked for font fallback
     vbook proof [DIR]          contact sheet of the built book (build/proof.png)
+    vbook samples [DIR]        the book in every template, with matching pages side by side (build/samples.png)
     vbook fonts [DIR]          the font stacks and whether each font is installed
 
 DIR holds book.toml (see docs/config.md). Needs Python 3.11+, pandoc 3 and typst 0.13+.
@@ -52,6 +53,16 @@ TEMPLATE_DEFAULTS = {
                 "text": ["EB Garamond 12", "Gentium Book Plus", "Hiragino Mincho ProN", "Noto Serif JP",
                          "STIX Two Text", "STIX Two Math", "Apple Symbols"],
                 "mono": ["Menlo", "DejaVu Sans Mono", "Hiragino Mincho ProN"]},
+    "modern": {"width": "156mm", "height": "234mm", "inside": "22mm", "outside": "24mm",
+               "top": "20mm", "bottom": "22mm", "size": "10.5pt",
+               "text": ["Source Serif 4", "Gentium Book Plus", "Hiragino Mincho ProN", "Noto Serif JP",
+                        "STIX Two Text", "STIX Two Math", "Apple Symbols"],
+               "mono": ["Menlo", "DejaVu Sans Mono", "Hiragino Mincho ProN"]},
+    "kintsugi": {"width": "156mm", "height": "234mm", "inside": "22mm", "outside": "24mm",
+                 "top": "20mm", "bottom": "22mm", "size": "10.5pt",
+                 "text": ["Crimson Pro", "Gentium Book Plus", "Shippori Mincho", "Noto Serif JP",
+                          "STIX Two Text", "STIX Two Math", "Apple Symbols"],
+                 "mono": ["Menlo", "DejaVu Sans Mono", "Shippori Mincho"]},
 }
 
 
@@ -66,12 +77,16 @@ def merge(base, over):
     return out
 
 
-def load(root):
+def load(root, template=None):
     p = root / "book.toml"
     if not p.exists():
         die(f"no book.toml in {root}")
     with open(p, "rb") as f:
-        cfg = merge(DEFAULTS, tomllib.load(f))
+        raw = tomllib.load(f)
+    if template:
+        # another template's sample: its own page and fonts, not this book's overrides
+        raw.setdefault("design", {}).update(template=template, page={}, fonts={})
+    cfg = merge(DEFAULTS, raw)
     tpl = cfg["design"]["template"]
     if tpl not in TEMPLATE_DEFAULTS:
         die(f"unknown template {tpl!r}; have {', '.join(TEMPLATE_DEFAULTS)}")
@@ -279,8 +294,8 @@ def main_typ(cfg):
 """
 
 
-def build(root, quiet=False):
-    cfg = load(root)
+def build(root, quiet=False, template=None, output=None):
+    cfg = load(root, template)
     md, fs = assemble(root, cfg)
     bd = stage(root, cfg)
     (bd / "body.md").write_text(md, encoding="utf-8")
@@ -302,7 +317,7 @@ def build(root, quiet=False):
     (bd / "body.typ").write_text(f'#import "/build/.vbook/templates/{tpl}.typ": *\n' + body, encoding="utf-8")
     (bd / "meta.typ").write_text(meta_typ(root, cfg), encoding="utf-8")
     (bd / "main.typ").write_text(main_typ(cfg), encoding="utf-8")
-    out = root / cfg["book"]["output"]
+    out = root / (output or cfg["book"]["output"])
     out.parent.mkdir(parents=True, exist_ok=True)
     r = run(["typst", "compile", *typst_args(root), str(bd / "main.typ"), str(out)])
     if r.stderr.strip():
@@ -346,6 +361,7 @@ def cmd_check(root):
 
 
 ALIASES = {"hiraginominchopron": "hiraminpron", "hiraginominchopro": "hiraminpro", "hiraginosans": "hiraginosans",
+           "hiraginokakugothicpron": "hirakakupron", "shipporimincho": "shipporimincho",
            "applesymbols": "applesymbols", "stixtwotext": "stixtwotext", "stixtwomath": "stixtwomath"}
 
 
@@ -412,6 +428,44 @@ def cmd_proof(root, sel):
     print(f"build/proof.png: {len(imgs)} pages")
 
 
+def evaluate(root, expr):
+    r = run(["typst", "eval", *typst_args(root), expr, "--in", str(root / "build/main.typ")])
+    return json.loads(r.stdout)
+
+
+def cmd_samples(root):
+    names = sorted(p.stem for p in (HERE / "templates").glob("*.typ"))
+    sd = root / "build" / "samples"
+    if sd.exists():
+        shutil.rmtree(sd)
+    rows = []
+    for name in names:
+        build(root, quiet=True, template=name, output=f"build/samples/{name}.pdf")
+        chapters = evaluate(root, "query(heading.where(level: 1)).map(h => h.location().page())")
+        numbered = evaluate(root, "query(heading.where(level: 1)).filter(h => h.outlined and h.supplement != []).map(h => h.location().page())")
+        figures = evaluate(root, "query(figure.where(kind: image)).map(f => f.location().page())")
+        first = numbered[0] if numbered else next((p for p in chapters if p > 5), chapters[0] if chapters else 1)
+        pick = [3, first, first + 1] + figures[:1] + chapters[-1:]
+        pick = sorted(set(pick), key=pick.index)
+        run(["typst", "compile", *typst_args(root), "--format", "png", "--ppi", "60",
+             "--pages", ",".join(map(str, pick)), str(root / "build/main.typ"), str(sd / f"{name}-{{0p}}.png")])
+        imgs = sorted(sd.glob(f"{name}-*.png"))
+        rows.append((name, imgs))
+        print(f"build/samples/{name}.pdf: pages {', '.join(map(str, pick))}")
+    cells = []
+    for name, imgs in rows:
+        cells.append(f'text(14pt, font: "STIX Two Text", upper("{name}"))')
+        cells.append("stack(dir: ltr, spacing: 10pt, " + ", ".join(
+            f'box(stroke: 0.4pt + luma(150), image("/build/samples/{p.name}", width: 156pt))' for p in imgs) + ")")
+    (sd / "sheet.typ").write_text(
+        "#set page(width: auto, height: auto, margin: 16pt, fill: luma(228))\n"
+        "#stack(spacing: 12pt, " + ", ".join(cells) + ")\n", encoding="utf-8")
+    run(["typst", "compile", "--root", str(root), "--format", "png", "--ppi", "72",
+         str(sd / "sheet.typ"), str(root / "build/samples.png")])
+    build(root, quiet=True)
+    print("build/samples.png")
+
+
 def cmd_fonts(root):
     cfg = load(root) if (root / "book.toml").exists() else None
     have = set(run(["typst", "fonts", *(["--font-path", str(root / "fonts")] if (root / "fonts").is_dir() else [])]).stdout.splitlines())
@@ -431,7 +485,7 @@ def cmd_new(dest):
 
 def main():
     ap = argparse.ArgumentParser(prog="vbook", description=__doc__.split("\n")[0])
-    ap.add_argument("command", choices=["new", "build", "check", "sweep", "proof", "fonts"])
+    ap.add_argument("command", choices=["new", "build", "check", "sweep", "proof", "samples", "fonts"])
     ap.add_argument("dir", nargs="?", default=".")
     ap.add_argument("--pages", help="for proof: pages to include, as typst --pages takes them (e.g. 1-12,40)")
     a = ap.parse_args()
@@ -446,6 +500,8 @@ def main():
         sys.exit(cmd_sweep(root))
     elif a.command == "proof":
         cmd_proof(root, a.pages)
+    elif a.command == "samples":
+        cmd_samples(root)
     elif a.command == "fonts":
         cmd_fonts(root)
 

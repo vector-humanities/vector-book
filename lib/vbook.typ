@@ -7,9 +7,10 @@
 #let vb-folio = state("vb-folio", false)
 #let vb-in-outline = state("vb-in-outline", false)
 #let vb-style = state("vb-style", (
-  marker-size: 7pt, marker-fill: luma(110),
+  marker-size: 7pt,
   gloss-size: 5.5pt, gloss-fill: rgb("#5a4a2a"), gloss-font: ("EB Garamond 12",),
-  key-size: 7.8pt, chapter-sink: 22mm,
+  key-size: 7.8pt,
+  marker: "margin", marker-fill: luma(110), marker-font: none, figure-rule: none,
 ))
 
 // Pandoc writes these for horizontal rules
@@ -20,16 +21,21 @@
 // so that notes in a caption do not reach the List of Figures.
 #let flex(long, short) = context if vb-in-outline.get() { short } else { long }
 
-// Source page number in the outer margin, from a [p. N] marker
+// Source page number from a [p. N] marker: in the outer margin, or inline in brackets
 #let pm(n) = context {
-  let g = vb-geom.get()
   let s = vb-style.get()
+  let f = if s.marker-font != none { (font: s.marker-font) } else { (:) }
+  if s.marker == "inline" {
+    return box(text(s.marker-size, fill: s.marker-fill, number-type: "lining", baseline: -1pt, ..f, [\[#n\]]) + h(0.2em))
+  }
+  let g = vb-geom.get()
   let pos = here().position()
   let recto = calc.odd(pos.page)
   let target = if recto { g.width - g.outside + 3.5mm } else { g.outside - 3.5mm - 8mm }
-  box(width: 0pt, place(top + left, dx: target - pos.x, dy: 0.15em,
-    box(width: 8mm, align(if recto { left } else { right },
-      text(s.marker-size, fill: s.marker-fill, number-type: "lining", n)))))
+  // the zero-width box sits on the baseline; raise the number by its height so the baselines align
+  let num = text(s.marker-size, fill: s.marker-fill, number-type: "lining", ..f, n)
+  box(width: 0pt, place(top + left, dx: target - pos.x, dy: -measure(num).height,
+    box(width: 8mm, align(if recto { left } else { right }, num))))
 }
 
 // English gloss laid over a figure label
@@ -51,14 +57,16 @@
   let img = image(path, width: width)
   let body = context {
     let s = measure(img)
-    box(width: s.width, height: s.height, {
+    let rule = vb-style.get().figure-rule
+    let framed(b) = if rule == none { b } else { box(stroke: (left: rule, right: rule), inset: (x: 3mm), b) }
+    framed(box(width: s.width, height: s.height, {
       img
       for o in overlays {
         let ra = o.at("align", default: "left") == "right"
         place(top + left, dx: o.x * s.width - (if ra { 60mm } else { 0mm }), dy: o.y * s.height,
           gloss(o.en, ralign: ra))
       }
-    })
+    }))
   }
   let cap = if caption == none { none } else if short == none { caption } else { flex(caption, short) }
   figure(body, caption: cap)

@@ -26,7 +26,7 @@ A level-one heading opens a chapter: a new recto, sunk 22 mm, the title in small
 
 With `parse-headings = true` in `book.toml`, a heading written as `Chapter 1. Categorical Contingency (第一章 定言的偶然)` is read the same way: a leading word and number become `num`, and a final parenthesis containing Chinese, Japanese or Korean characters becomes `orig`. Use this for a master file written before the attributes existed.
 
-Level-two headings are centred small capitals; level three is italic; level four is roman. If the files use `##` for chapters, set `shift-headings = -1`; a heading shifted above level one (a document title) is dropped.
+In `classic`, level-two headings are centred small capitals, level three is italic and level four is roman; the other templates differ (see [config.md](config.md#templates)). If the files use `##` for chapters, set `shift-headings = -1`; a heading shifted above level one (a document title) is dropped.
 
 Running heads give the running title on versos and the chapter on rectos, and none on a chapter's opening page.
 
@@ -36,7 +36,7 @@ Running heads give the running title on versos and the chapter on rectos, and no
 [p. 12]
 ```
 
-marks where page 12 of the source edition begins. It is set as a small grey number in the outer margin beside the line where the page begins. The pattern is configurable (`markers.page`, a regular expression whose first group is the number). Further patterns in `markers.strip` are removed from the book and kept in the files: in a translation from page images, the image number beside each page marker.
+marks where page 12 of the source edition begins. It is set as a small number in the outer margin, on the baseline of the line where the page begins (`classic`, `kintsugi`), or inline as a small grey `[12]` (`modern`). The pattern is configurable (`markers.page`, a regular expression whose first group is the number). Further patterns in `markers.strip` are removed from the book and kept in the files: in a translation from page images, the image number beside each page marker.
 
 Markers inside a footnote definition are dropped, so that notes do not put numbers in the margin. Markers inside code spans and code blocks are left alone.
 

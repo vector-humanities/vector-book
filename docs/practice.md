@@ -16,7 +16,7 @@ Title, credits, cover text, colours, portraits, blurb and protected words belong
 
 ## 4. Offer design samples
 
-The translator chooses the design from two or three samples (a title page, a text page with notes, a figure, a glossary page). For Kuki there were three: Classic scholarly (EB Garamond, page numbers in the margin), Modern academic (Source Serif 4 and Source Sans 3, inline page markers) and Kintsugi (Crimson Pro and Shippori Mincho, gold hairlines, kanji section numbers). The translator chose Classic and asked that chapter names not be set in italic. Classic is the template here; the other two are to follow.
+The translator chooses the design from two or three samples (a title page, a text page with notes, a figure, a glossary page). For Kuki there were three: Classic scholarly (EB Garamond, page numbers in the margin), Modern academic (Source Serif 4 and Source Sans 3, inline page markers) and Kintsugi (Crimson Pro and Shippori Mincho, gold hairlines, kanji section numbers). The translator chose Classic and asked that chapter names not be set in italic. All three are templates here (`classic`, `modern`, `kintsugi`), and `vbook samples` sets a book's own pages in each, so the choice is made on the text being typeset.
 
 ## 5. Fonts and the glyph sweep
 
@@ -28,7 +28,7 @@ The translator chooses the design from two or three samples (a title page, a tex
 
 ## 6. Source pages in the margin
 
-Page markers `[p. N]` in the text give every passage a stable reference to the edition translated, for change lists, notes, concordances and readers checking a quotation. The build sets them in the outer margin and drops them from notes. Image numbers kept beside them for checking against the scans are stripped from the book.
+Page markers `[p. N]` in the text give every passage a stable reference to the edition translated, for change lists, notes, concordances and readers checking a quotation. The build sets them in the outer margin, on the baseline of the line where the page begins, and drops them from notes. (The Kuki build placed the number's top at the baseline, half a line low; this showed only when a looser template was tried.) Image numbers kept beside them for checking against the scans are stripped from the book.
 
 ## 7. Notes
 
@@ -78,4 +78,5 @@ All paths are relative to the book folder; Typst's root is the book folder. The 
 | "contin- gent" in a gloss | Hyphenated line in the gloss file | Hyphen and newline joined |
 | Concordance crushed into narrow columns | Equal widths from the dash row | Widths from contents |
 | Build failed after the move to the repository | Absolute paths | Paths relative to the book folder |
+| Margin page numbers half a line low | Number placed with its top on the baseline | Number raised by its own height, baselines aligned |
 | Author's preface found late | It stands on an unnumbered page before the contents | Survey every page image before partitioning (Vector Translation, rule 2) |

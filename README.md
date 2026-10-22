@@ -20,8 +20,13 @@ Needs Python 3.11+, Pandoc 3 and Typst 0.13 or later.
 ./vbook check mybook        # notes and figures set against the sources; missing glyphs
 ./vbook sweep mybook        # every non-ASCII character, checked for font fallback
 ./vbook proof mybook        # contact sheet of the pages
+./vbook samples mybook      # the book in every template, matching pages side by side
 ./vbook fonts mybook        # the font stacks, and which are installed
 ```
+
+Three templates come from the design samples made for Kuki: `classic` (the one chosen), `modern` and `kintsugi`.
+
+<p align="center"><img src="docs/img/samples.png" alt="The specimen in the three templates: title page, chapter opening, text page, figure page and glossary for each" width="720"></p>
 
 The specimen in [`examples/specimen/`](examples/specimen/) shows every convention and builds to [`examples/specimen/book/specimen.pdf`](examples/specimen/book/specimen.pdf).
 
@@ -41,7 +46,7 @@ Vector Book is stage 7 of the Vector Translation method, and serves editions as 
 ```
 vbook                command
 lib/                 Pandoc Lua filter and shared Typst functions
-templates/           page designs (classic)
+templates/           page designs: classic, modern, kintsugi
 covers/              frame and plain covers
 starter/             the project vbook new copies
 examples/specimen/   a book that uses every convention
@@ -51,6 +56,6 @@ brand/               the mark and its generator
 
 ## Status
 
-Alpha, October 2026. The full Kuki book builds through it: 473 notes and 22 figures set, no missing glyphs. To come: the Modern and Kintsugi designs from the Kuki samples, a facing-page layout for literal and readable versions, EPUB and HTML output, and open CJK fonts for builds away from macOS.
+Alpha, October 2026. The full Kuki book builds through it: 473 notes and 22 figures set, no missing glyphs. To come: a facing-page layout for literal and readable versions, EPUB and HTML output, and open CJK fonts for builds away from macOS.
 
 Licence: GNU General Public License, version 3 or later.
