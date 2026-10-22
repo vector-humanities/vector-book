@@ -181,8 +181,11 @@
   // head of the page: logo, series, publisher, then place and address
   #if im.logo != none { image(im.logo.image, width: im.logo.width); v(2mm) }
   #if im.series != none {
-    text(9pt, tracking: 0.06em, upper(im.series))
-    if im.series-number != none { text(9pt, tracking: 0.06em, number-type: "lining", [ #im.series-number]) }
+    let st = im.series-style
+    let series = if st == "caps" { text(9pt, tracking: 0.06em, upper(im.series)) }
+      else { text(10pt, style: if st == "italic" { "italic" } else { "normal" }, im.series) }
+    series
+    if im.series-number != none { text(if st == "caps" { 9pt } else { 10pt }, number-type: "lining", [ #im.series-number]) }
     linebreak()
   }
   #if im.publisher != none { text(9pt, tracking: 0.06em, upper(im.publisher)); linebreak() }

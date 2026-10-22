@@ -44,7 +44,7 @@ DEFAULTS = {
                 "parse-headings": False, "shift-headings": 0, "handover": "partial", "bibliography": None, "csl": None},
     "markers": {"page": r"\[p\. (\d+)\]", "strip": []},
     "imprint": {"publisher": None, "publisher-place": None, "publisher-url": None, "publisher-logo": None,
-                "series": None, "series-number": None, "edition": None, "copyright": [], "moral-rights": None,
+                "series": None, "series-number": None, "series-style": "roman", "edition": None, "copyright": [], "moral-rights": None,
                 "licence": None, "third-party": None, "ai": None, "catalogue": [], "isbn": None, "doi": None,
                 "typeset": True, "other": None},
     "frontispiece": None,
@@ -101,6 +101,8 @@ def load(root, template=None):
         if not LENGTH.match(str(v)):
             die(f"design.page.{k} = {v!r} is not a length such as 156mm or 10.5pt")
     cfg["_page"] = page
+    if cfg["imprint"]["series-style"] not in ("roman", "italic", "caps"):
+        die('imprint.series-style should be "roman", "italic" or "caps"')
     for k in ("isbn", "doi", "licence"):          # first placed in [book]; they belong to the imprint page
         if cfg["book"].get(k) and not cfg["imprint"].get(k):
             cfg["imprint"][k] = cfg["book"][k]
@@ -255,7 +257,7 @@ def imprint_typ(root, cfg):
         "publisher": md2ty(im["publisher"]), "place": md2ty(im["publisher-place"]),
         "url": tystr(im["publisher-url"]) if im["publisher-url"] else "none",
         "logo": image_dict(im["publisher-logo"], root, "imprint.publisher-logo") if im["publisher-logo"] else "none",
-        "series": md2ty(im["series"]), "series-number": md2ty(str(im["series-number"]) if im["series-number"] else None),
+        "series": md2ty(im["series"]), "series-style": tystr(im["series-style"]), "series-number": md2ty(str(im["series-number"]) if im["series-number"] else None),
         "edition": md2ty(im["edition"]), "copyright": lines(im["copyright"]), "moral-rights": md2ty(im["moral-rights"]),
         "licence": md2ty(im["licence"]), "third-party": md2ty(im["third-party"]), "ai": md2ty(im["ai"]),
         "catalogue": lines(im["catalogue"]),
