@@ -242,6 +242,21 @@ def typeset_line(root, cfg):
     return f"Typeset in {names} with Vector Book."
 
 
+VH_LOGO = '(image: "/build/.vbook/lib/assets/vector-humanities-mark.svg", width: 12mm, caption: none)'
+
+
+def logo_typ(root, im):
+    """The book's logo; for a Vector Humanities book with none named, the Vector Humanities mark; false for none."""
+    logo = im["publisher-logo"]
+    if logo is False:
+        return "none"
+    if logo:
+        return image_dict(logo, root, "imprint.publisher-logo")
+    if plain(im["publisher"] or "").strip().lower() == "vector humanities":
+        return VH_LOGO
+    return "none"
+
+
 def imprint_typ(root, cfg):
     im = cfg["imprint"]
     isbn = im["isbn"]
@@ -256,7 +271,7 @@ def imprint_typ(root, cfg):
     fields = {
         "publisher": md2ty(im["publisher"]), "place": md2ty(im["publisher-place"]),
         "url": tystr(im["publisher-url"]) if im["publisher-url"] else "none",
-        "logo": image_dict(im["publisher-logo"], root, "imprint.publisher-logo") if im["publisher-logo"] else "none",
+        "logo": logo_typ(root, im),
         "series": md2ty(im["series"]), "series-style": tystr(im["series-style"]), "series-number": md2ty(str(im["series-number"]) if im["series-number"] else None),
         "edition": md2ty(im["edition"]), "copyright": lines(im["copyright"]), "moral-rights": md2ty(im["moral-rights"]),
         "licence": md2ty(im["licence"]), "third-party": md2ty(im["third-party"]), "ai": md2ty(im["ai"]),
