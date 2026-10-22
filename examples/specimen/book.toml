@@ -6,7 +6,7 @@ subtitle = "Conventions for typesetting translations and editions"
 author = "Vector Humanities"
 original-title = "書物の設計"
 running-title = "A Vector Book Specimen"
-credit = "Vector Book · Vector Humanities"
+credit = "Vector Humanities"
 output = "book/specimen.pdf"
 credits = """
 *A Vector Book Specimen*. The design is the one first made for the vector translation of Kuki Shūzō's 偶然性の問題 (*The Problem of Contingency*, 1935).
