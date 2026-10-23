@@ -126,7 +126,8 @@
   vb-geom.update((width: pg.width, inside: pg.inside, outside: pg.outside))
   vb-ground.update((ground: meta.field.ground, on: meta.field.on-ground))
   vb-style.update(s => s + (notes-reset: meta.notes-reset, gloss-font: (fonts.at(0), "Gentium Book Plus"), marker: st.marker,
-    marker-fill: st.marker-fill, marker-font: st.marker-font, figure-rule: st.figure-rule))
+    marker-fill: st.marker-fill, marker-font: st.marker-font, figure-rule: st.figure-rule)
+    + (if meta.gloss-fill != none { (gloss-fill: meta.gloss-fill) } else { (:) }))
 
   set document(title: meta.title-plain, author: meta.author-plain)
   set text(font: fonts, size: pg.size, lang: meta.lang, region: meta.region, hyphenate: true, number-type: "old-style", stretch: st.stretch)

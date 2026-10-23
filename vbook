@@ -39,7 +39,7 @@ DEFAULTS = {
     "design": {"template": "classic", "cover": None, "field-palette": "mint-pink", "field-colours": None,
                "field-ink": "#0d0d0d", "vector-palette": "electric", "vector-colours": None,
                "vector-ground": None, "vector-ink": None, "page": {}, "fonts": {},
-               "no-hyphen": [], "end-blanks": 0, "figure-dpi": 300, "notes": "chapter"},
+               "no-hyphen": [], "end-blanks": 0, "figure-dpi": 300, "gloss-colour": None, "notes": "chapter"},
     "sources": {"front": [], "body": ["text/*.md"], "back": [], "glossary": None,
                 "glossary-columns": ["source", "reading", "english"],
                 "glossary-headers": ["Source", "Reading", "English"],
@@ -345,6 +345,7 @@ def meta_typ(root, cfg):
         "nohyphen": tystr(nohyphen),
         "end-blanks": str(int(d["end-blanks"])),
         "notes-reset": "true" if d["notes"] == "chapter" else "false",
+        "gloss-fill": colour(d["gloss-colour"]) if d["gloss-colour"] else "none",
         "frontispiece": image_dict(cfg["frontispiece"], root, "frontispiece"),
         "cover": f"(paper: {colour(c['paper'])}, ink: {colour(c['ink'])}, accent: {colour(c['accent'])}, frame: {frame_ty})",
         "back": "(" + ", ".join([

@@ -27,6 +27,7 @@ cover = "frame"
 no-hyphen = ["contingency", "contingencies"]
 end-blanks = 2
 figure-dpi = 300
+gloss-colour = "#000000"
 
 [sources]
 front = ["front/*.md"]

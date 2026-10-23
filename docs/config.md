@@ -35,6 +35,7 @@ Every key, with its default. Strings marked *Markdown* may use emphasis and line
 | `notes` | `"chapter"` | Note numbers restart with each chapter (`"chapter"`) or run through the book (`"book"`) |
 | `end-blanks` | `0` | Pages marked "Page left deliberately blank" before the back cover |
 | `figure-dpi` | `300` | Resolution at which figure images are sized |
+| `gloss-colour` | brown, `#5a4a2a` | Colour of the English glosses laid over figures |
 
 ## Templates
 
