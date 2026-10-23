@@ -124,7 +124,7 @@ Optional. A page facing the title page.
 
 | Key | Default | |
 |---|---|---|
-| `paper`, `ink`, `accent` | `#efe8d8`, `#1f1b16`, `#a8873c` | Cover colours; `accent` for the rule on the back |
+| `paper`, `ink`, `accent` | `#efe8d8` (`modern`: `#ffffff`), `#1f1b16`, `#a8873c` | Cover colours; `accent` for the rule on the back |
 | `frame` | none | For the frame cover: `{ left = "英譯", centre = "偶然性の問題", right = "九鬼周造著" }`, set as vertical columns; the centre in bold |
 
 Follow the typography of the edition translated, but do not reproduce a publisher's name the edition does not carry.

@@ -65,7 +65,8 @@ TEMPLATE_DEFAULTS = {
                "top": "20mm", "bottom": "22mm", "size": "10.5pt",
                "text": ["Source Serif 4", "Gentium Book Plus", "Hiragino Mincho ProN", "Noto Serif JP",
                         "STIX Two Text", "STIX Two Math", "Apple Symbols"],
-               "mono": ["Menlo", "DejaVu Sans Mono", "Hiragino Mincho ProN"], "display": "Source Sans 3"},
+               "mono": ["Menlo", "DejaVu Sans Mono", "Hiragino Mincho ProN"], "display": "Source Sans 3",
+               "cover-paper": "#ffffff"},
     "kintsugi": {"width": "156mm", "height": "234mm", "inside": "22mm", "outside": "24mm",
                  "top": "20mm", "bottom": "22mm", "size": "10.5pt",
                  "text": ["Crimson Pro", "Gentium Book Plus", "Shippori Mincho", "Noto Serif JP",
@@ -110,6 +111,11 @@ def load(root, template=None):
         raw.setdefault("design", {}).update(template=template, page={}, fonts={})
         if "cover" in TEMPLATE_DEFAULTS.get(template, {}):
             raw["design"]["cover"] = TEMPLATE_DEFAULTS[template]["cover"]
+        if "cover-paper" in TEMPLATE_DEFAULTS.get(template, {}):
+            raw.setdefault("cover", {})["paper"] = TEMPLATE_DEFAULTS[template]["cover-paper"]
+    tpl = raw.get("design", {}).get("template", "classic")
+    if "paper" not in raw.get("cover", {}) and "cover-paper" in TEMPLATE_DEFAULTS.get(tpl, {}):
+        raw.setdefault("cover", {})["paper"] = TEMPLATE_DEFAULTS[tpl]["cover-paper"]
     cfg = merge(DEFAULTS, raw)
     if cfg["design"]["template"] == "wildcard":     # the organic design's first name
         cfg["design"]["template"] = "organic"

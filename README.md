@@ -8,7 +8,7 @@
 
 Vector Book typesets a book from Markdown section files. A short `book.toml` describes the book; `vbook build` assembles the sections, passes them through Pandoc with a Lua filter, and sets them in Typst. Its first design was made for the vector translation of Kuki Shūzō's 偶然性の問題 (*The Problem of Contingency*, 1935): Royal octavo, EB Garamond, centred small-capital headings, and the source edition's page numbers in the outer margin. Five designs are available, and every book can be set in all of them with one command.
 
-<p align="center"><img src="docs/img/covers.png" alt="Covers: the specimen in the classic, modern, kintsugi, organic and vectors designs, and the Kuki book with its frame, field and vector covers" width="100%"></p>
+<p align="center"><img src="docs/img/covers.png" alt="Covers: the specimen in the classic, modern, kintsugi, organic and vectors designs" width="100%"></p>
 
 ## Five designs
 
