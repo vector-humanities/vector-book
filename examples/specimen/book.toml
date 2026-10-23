@@ -1,15 +1,15 @@
 # Vector Book specimen. Every key is documented in docs/config.md.
 
 [book]
-title = "A Vector Book Specimen"
+title = "A Vector Book"
 subtitle = "Conventions for typesetting translations and editions"
 author = "Vector Humanities"
 original-title = "書物の設計"
-running-title = "A Vector Book Specimen"
+running-title = "A Vector Book"
 credit = "Vector Humanities"
 output = "book/specimen.pdf"
 credits = """
-*A Vector Book Specimen*. The design is the one first made for the vector translation of Kuki Shūzō's 偶然性の問題 (*The Problem of Contingency*, 1935).
+*A Vector Book*. The design is the one first made for the vector translation of Kuki Shūzō's 偶然性の問題 (*The Problem of Contingency*, 1935).
 
 Numbers in the outer margin give the pages of a notional source edition. Footnotes are the translator's; insertions into the source text are set in tortoise-shell brackets, 〔 〕.
 """
