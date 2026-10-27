@@ -154,7 +154,7 @@ footer ul { list-style: none; margin: 0; padding: 0; }
   <a class="name" href="#top">VECTOR BOOK</a>
   <nav aria-label="Sections">
     <a href="#designs">Designs</a><a href="#organic">Organic</a><a href="#vectors">Vectors</a><a href="#details">Details</a>
-    <a href="#prelims">Front matter</a><a href="#flow">From translation to book</a><a href="#use">Making a book</a>
+    <a href="#sample">Sample edition</a><a href="#prelims">Front matter</a><a href="#flow">From translation to book</a><a href="#use">Making a book</a>
     <a href="https://github.com/vector-humanities/vector-book">GitHub</a>
   </nav>
 </header>
@@ -330,6 +330,15 @@ footer ul { list-style: none; margin: 0; padding: 0; }
   </div>
 </section>
 
+<section id="sample">
+  <div class="wide">
+    <p class="kicker">A sample edition</p>
+    <h2>Sketch of the Analytical Engine</h2>
+    <p class="lede">Menabrea's memoir of 1842 as Ada Lovelace translated it, with her Notes A to G, set from the Wikisource transcription of <i>Scientific Memoirs</i> (1843). The 1843 page numbers in the margin; Lovelace's footnotes and the editor's, in captions, table cells and chapter titles, some with quotations and displayed mathematics; Lovelace's tables and diagrams, the widest on turned pages; a drawn figure and a glossed facsimile; a glossary; a bibliography formatted from BibTeX. <a href="https://github.com/vector-humanities/vector-book/blob/main/examples/lovelace/book/lovelace.pdf">The PDF</a>, and <a href="https://github.com/vector-humanities/vector-book/tree/main/examples/lovelace">its sources</a>.</p>
+    <figure><img class="zoom" src="img/sample-lovelace.png" alt="The Lovelace sample edition: a page of the introduction with a drawn figure and citations, a facsimile with glosses, the Note G diagram on a turned page, a page with Lovelace's notes and the editor's, and the bibliography" loading="lazy"></figure>
+  </div>
+</section>
+
 <section id="flow" class="ground">
   <div class="wide">
     <p class="kicker">Vector Translation, stage 7</p>
@@ -380,6 +389,8 @@ mybook/
   back/                   <span class="c"># appendices; the glossary is set last</span>
   figures/overlays.json   <span class="c"># English glosses laid over figure labels</span>
   proof/return.md         <span class="c"># the form for returns to the translation side</span></pre>
+      <p>A book that already exists as a document comes in through <code>vbook import</code>, which reads anything Pandoc reads: Word, OpenDocument, Markdown, HTML, EPUB, LaTeX. It splits the document at its level-one headings into numbered section files, keeps each footnote with its chapter, extracts the images to <code>figures/</code>, and writes <code>book.toml</code> with the document's title.</p>
+<pre>./vbook import mybook draft.docx</pre>
     </div></div>
     <div class="how"><div><div class="n">3</div><h3>Fill in book.toml</h3></div><div class="body">
       <p><code>[book]</code> holds the title, subtitle, author, original title, credit line (&ldquo;Vector translated by &hellip;&rdquo;), affiliation and credits paragraph. Under <code>[design]</code>, <code>template</code> picks the design and <code>cover</code> the cover (<code>plain</code> or <code>frame</code> for classic, modern and kintsugi; organic and vectors bring their own). <code>[sources]</code> lists the section files by glob, <code>[markers]</code> gives the page-marker pattern, and <code>[imprint]</code> fills the page behind the title page: publisher, series, edition, copyright, licence, AI disclosure, cataloguing, ISBN and DOI.</p>

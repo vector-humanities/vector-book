@@ -4,12 +4,12 @@
 local cfg = { root = '.', overlays = {}, dpi = 300, textwidth = 108, parse = false, shift = 0 }
 
 local function ty(inlines)
-  local s = pandoc.write(pandoc.Pandoc({ pandoc.Plain(inlines) }), 'typst')
+  local s = pandoc.write(pandoc.Pandoc({ pandoc.Plain(inlines) }), 'typst-citations')
   return (s:gsub('%s+$', ''))
 end
 
 local function tyb(blocks)
-  local s = pandoc.write(pandoc.Pandoc(blocks), 'typst')
+  local s = pandoc.write(pandoc.Pandoc(blocks), 'typst-citations')
   return (s:gsub('%s+$', ''))
 end
 

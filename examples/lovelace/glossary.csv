@@ -1,0 +1,13 @@
+source,english,notes
+mill,arithmetic unit,"Where the four operations are performed on numbers brought from the store (the memoir; Notes B, D, G)."
+store,memory,"The collection of columns of Variables, holding numbers between operations (the memoir)."
+Variable,storage location,"A column of discs holding one number with its sign; written V with a lower index for its place (Note B)."
+upper index,—,"The number to the upper left of a V, counting the values the Variable has held (Note D)."
+Operation-card,instruction,"A punched card naming the operation (+, −, ×, ÷) the mill is to perform (the memoir; Notes B, F)."
+Variable-card,operand address,"A card naming the Variables that supply the mill and receive its result (Notes B, D, G)."
+Supplying and Receiving Variables,source and destination,"The Variables a Variable-card connects to the mill, and those it directs the result to (Notes B, D)."
+Retaining and Zero supply-cards,non-destructive and destructive read,"Whether a number returns to its Variable after use, or the Variable is set to zero (Note D)."
+Working Variables,intermediate storage,"Variables holding results that are used again within the calculation (Notes D, G)."
+Result-variables,output,"Variables on which final results are given; also Result-columns (Notes D, E, G)."
+cycle,loop,"A group of operations repeated; a cycle of cycles is a loop within a loop (Notes E, F, G)."
+backing,repetition of cards,"Turning the cards back so that a group of them acts again, taken from the Jacquard-loom (Notes C, F)."

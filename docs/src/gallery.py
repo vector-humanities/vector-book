@@ -83,6 +83,37 @@ def row(images, out, tmp, width=60, labels=None):
     compose(typ, out, tmp)
 
 
+def page_with(pdf, text):
+    for p in range(1, pages_of(pdf) + 1):
+        t = subprocess.run(["pdftotext", "-f", str(p), "-l", str(p), str(pdf), "-"], capture_output=True, text=True).stdout
+        if text in " ".join(t.split()):
+            return p
+    raise SystemExit(f"{pdf.name}: {text!r} not found")
+
+
+def turned(pdf):
+    out = subprocess.run(["pdfinfo", "-f", "1", "-l", str(pages_of(pdf)), str(pdf)], capture_output=True, text=True).stdout
+    return [int(l.split()[1]) for l in out.splitlines() if l.startswith("Page") and " size:" in l and float(l.split()[3]) > float(l.split()[5])]
+
+
+def sample_edition(tmp):
+    """The Lovelace sample edition: pages with a figure and citations, a glossed facsimile, a turned table, notes, references."""
+    pdf = REPO / "examples" / "lovelace" / "book" / "lovelace.pdf"
+    pick = [(page_with(pdf, "The organisation of the engine as the memoir"), "introduction: a drawn figure, citations"),
+            (page_with(pdf, "The diagram belonging to Note D as printed"), "a facsimile with editorial glosses"),
+            (turned(pdf)[1], "Note G: the diagram on a turned page"),
+            (page_with(pdf, "Operation 4 of the diagram divides"), "Lovelace's notes and the editor's"),
+            (page_with(pdf, "Fuegi, John"), "bibliography from BibTeX")]
+    cells = []
+    for p, label in pick:
+        img = page_png(pdf, p, tmp / f"lv-{p}.png", 220)
+        cells.append(f'stack(spacing: 7pt, box(stroke: 0.6pt + luma(175), image("{img}", height: 84mm)), '
+                     f'text(9pt, font: "Fira Sans", stretch: 75%, fill: luma(60), "{label}"))')
+    compose(f"""#set page(width: auto, height: auto, margin: 26pt, fill: {GROUND})
+#stack(dir: ltr, spacing: 14pt, {", ".join(cells)})
+""", IMG / "sample-lovelace.png", tmp)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--kuki", help="classic Kuki PDF (covers only)")
@@ -115,6 +146,7 @@ def main():
         pdf = SAMPLES / "classic.pdf"
         prelims = [page_png(pdf, p, tmp / f"pre-{p}.png", 220) for p in (3, 4, 5)]
         row(prelims, IMG / "prelims.png", tmp, width=72, labels=["title page", "imprint page", "contents"])
+        sample_edition(tmp)
         wpdf = SAMPLES / "organic.pdf"
         wl = [page_png(wpdf, p, tmp / f"w-{p}.png", 220) for p in (3, 5)]
         last = pages_of(wpdf)

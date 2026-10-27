@@ -1,0 +1,57 @@
+# Vector Book sample edition. Every key is documented in docs/config.md.
+
+[book]
+title = "Sketch of the Analytical Engine"
+subtitle = "Invented by Charles Babbage"
+author = "L. F. Menabrea"
+original-title = "Notions sur la machine analytique de M. Charles Babbage"
+running-title = "Sketch of the Analytical Engine"
+credit = "Translated, with Notes, by Ada Augusta, Countess of Lovelace"
+output = "book/lovelace.pdf"
+credits = """
+First published in *Scientific Memoirs* 3 (London: Richard and John E. Taylor, 1843), 666–731, from Menabrea's article in the *Bibliothèque universelle de Genève* (October 1842).
+
+Numbers in the outer margin give the pages of *Scientific Memoirs*. Footnotes marked "Ed." are this edition's; all others are Lovelace's.
+"""
+
+[imprint]
+publisher = "Vector Humanities"
+edition = "Sample edition, 2026"
+copyright = ["Text: public domain", "Introduction, notes and diagrams: Vector Humanities, 2026"]
+licence = "The introduction, notes and diagrams are released under a [Creative Commons Attribution 4.0 International Licence](https://creativecommons.org/licenses/by/4.0/) (CC BY 4.0)."
+third-party = "Text from the Wikisource transcription of *Scientific Memoirs*, vol. 3, checked against the page images."
+other = "Source files: `examples/lovelace/` in the Vector Book repository."
+
+[design]
+template = "classic"
+cover = "plain"
+end-blanks = 0
+figure-dpi = 260
+
+[sources]
+front = ["front/*.md"]
+body = ["text/*.md"]
+back = ["back/*.md"]
+bibliography = "references.bib"
+glossary = "glossary.csv"
+glossary-title = "Glossary of the Engine"
+glossary-columns = ["source", "english", "notes"]
+glossary-headers = ["Lovelace", "In later terms", "Notes"]
+overlays = "figures/overlays.json"
+
+[markers]
+page = '\[p\. (\d+)\]'
+
+[cover]
+paper = "#efe8d8"
+ink = "#1f1b16"
+accent = "#a8873c"
+
+[back]
+quote = "We may say most aptly that the Analytical Engine *weaves algebraical patterns* just as the Jacquard-loom weaves flowers and leaves."
+quote-source = "Ada Lovelace, *Note A*"
+blurb = """
+In 1842 the Italian engineer Luigi Federico Menabrea published a French account of Charles Babbage's Analytical Engine. Ada Lovelace translated it into English and added seven Notes, three times the length of the memoir, which set out what the engine could do and, in Note G, the full course of a calculation of the Bernoulli numbers.
+
+This sample edition of the text is set with Vector Book. It carries the source's page numbers in the margin, Lovelace's footnotes and the editor's, the mathematics, the tables and diagrams of the Notes, and a bibliography.
+"""

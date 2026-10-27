@@ -1,0 +1,7 @@
+{
+  "note-d-diagram-p711.jpg": [
+    {"x": 0.275, "y": 0.062, "en": "inputs"},
+    {"x": 0.615, "y": 0.068, "en": "working storage"},
+    {"x": 0.826, "y": 0.072, "en": "outputs", "align": "right"}
+  ]
+}

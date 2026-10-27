@@ -47,6 +47,12 @@ Five palettes (`vector-palette`: electric, night, blueprint, garden, spectrum), 
 
 <p align="center"><img src="docs/img/palettes-vectors.png" alt="The vectors cover and a chapter opening in five palettes" width="100%"></p>
 
+## A sample edition
+
+[*Sketch of the Analytical Engine*](examples/lovelace/book/lovelace.pdf): L. F. Menabrea's memoir of 1842, as translated with Notes A to G by Ada Lovelace in 1843, set from the Wikisource transcription of *Scientific Memoirs*. It carries what a scholarly edition needs: the 1843 page numbers in the margin; Lovelace's footnotes and the editor's in one series, including notes on a chapter title, in a figure caption and in table cells, notes with quotations and displayed mathematics, and notes with citations; mathematics in the text throughout; Lovelace's tables and diagrams, the two widest on turned pages; a figure drawn for the edition and a facsimile with editorial glosses; a glossary; and a bibliography formatted from BibTeX by citeproc. 96 pages; the sources are in [`examples/lovelace/`](examples/lovelace/), with the scripts that took the text from Wikisource.
+
+<p align="center"><img src="docs/img/sample-lovelace.png" alt="The Lovelace sample edition: a page of the introduction with a drawn figure and citations, a facsimile with glosses, the Note G diagram on a turned page, a page with Lovelace's notes and the editor's, and the bibliography" width="100%"></p>
+
 ## Front matter
 
 Cover, frontispiece, title page, an imprint page (publisher and series, edition, copyright and moral rights, licence, third-party material, AI disclosure, cataloguing, ISBN per format, DOI, and a typesetting line Vector Book writes from the faces the book's characters reach), Contents and List of Figures, all from `book.toml`.
@@ -118,6 +124,14 @@ mybook/
   figures/overlays.json   English glosses to lay over figure labels
   proof/return.md      the form for returns to the translation side
 ```
+
+A book that already exists as a document comes in through `vbook import`, which reads anything Pandoc reads (Word `.docx`, OpenDocument `.odt`, Markdown, HTML, EPUB, LaTeX, RTF):
+
+```bash
+path/to/vector-book/vbook import mybook draft.docx
+```
+
+It splits the document at its level-one headings into numbered files in `text/` (anything before the first heading goes to `front/00-front-matter.md`), keeps each footnote with its chapter, extracts the images to `figures/`, and, for a new book, writes `book.toml` with the document's title. Page markers such as `[p. 12]` typed in the document come through as markers. Check the result with `vbook check`; Word styles that Markdown cannot express (colours, underlining, text boxes) are dropped.
 
 The examples below are run from the vector-book folder, as `./vbook`; from anywhere else, give the path to `vbook`.
 
@@ -210,12 +224,13 @@ templates/           page designs: classic, modern, kintsugi, organic, vectors
 covers/              frame, plain, field and vector covers
 starter/             the project vbook new copies
 examples/specimen/   a book that uses every convention
+examples/lovelace/   the sample edition: Menabrea and Lovelace, Sketch of the Analytical Engine (1843)
 docs/                documentation, gallery images, the site
 brand/               the mark and its generator
 ```
 
 ## Status
 
-Alpha, October 2026. The full Kuki book builds in every design: 473 notes and 22 figures set, no missing glyphs (classic 242 pp., organic 284 pp., vectors 300 pp.). To come: a facing-page layout for literal and readable versions, EPUB and HTML output, and open CJK fonts for builds away from macOS.
+Alpha, October 2026. The full Kuki book builds in every design: 473 notes and 22 figures set, no missing glyphs (classic 242 pp., organic 284 pp., vectors 300 pp.). The Lovelace sample edition builds in every design: 37 notes, 2 figures, two tables on three turned pages. To come: a facing-page layout for literal and readable versions, EPUB and HTML output, and open CJK fonts for builds away from macOS.
 
 Created by David M. Berry. Licence: GNU General Public License, version 3 or later.

@@ -53,6 +53,24 @@
   align(left, text(vb-style.get().key-size, fill: luma(60), body)))
 
 // Figure with optional overlays. Overlay positions are fractions of the image's width and height.
+// A table in small type with close cells, for raw Typst tables wider than the pipe-table style allows
+#let vb-small-table(body) = block(width: 100%, breakable: true, {
+  set text(7pt, hyphenate: false)
+  set par(justify: false, first-line-indent: 0em, leading: 0.4em)
+  set table(inset: (x: 2.5pt, y: 2pt), stroke: 0.3pt + luma(140))
+  show figure: set block(breakable: true)
+  align(center, body)
+})
+
+// A table too wide for the page, set on its own page turned through ninety degrees
+#let vb-turned(body) = page(flipped: true, header: none, footer: none, margin: 14mm, {
+  set text(6pt, hyphenate: false)
+  set par(justify: false, first-line-indent: 0em, leading: 0.35em)
+  set table(inset: (x: 1.8pt, y: 1.5pt), stroke: 0.3pt + luma(140))
+  show figure: set block(breakable: true)
+  align(center + horizon, body)
+})
+
 #let vfig(path, width: auto, caption: none, short: none, key: none, overlays: ()) = {
   let img = image(path, width: width)
   let body = context {

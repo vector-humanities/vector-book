@@ -3,6 +3,7 @@
 """Vector Book: typeset a book from Markdown section files with Pandoc and Typst.
 
     vbook new DIR              start a book from the starter project
+    vbook import DIR FILE...   make section files from a Word, OpenDocument, Markdown, HTML, EPUB or LaTeX document
     vbook build [DIR]          assemble, convert and compile the book
     vbook check [DIR]          page, note and figure counts; missing glyphs (--report writes BUILD.md beside the PDF)
     vbook sweep [DIR]          glyph sweep: every non-ASCII character, checked for font fallback
@@ -23,6 +24,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import tomllib
 import unicodedata
 from pathlib import Path
@@ -530,17 +532,20 @@ def build(root, quiet=False, template=None, output=None):
     make_fields(root, cfg, md)
     (bd / "body.md").write_text(md, encoding="utf-8")
     s = cfg["sources"]
+    # citeproc formats citations before the filter turns notes, captions and headings into raw Typst;
+    # -citations keeps Pandoc from writing Typst's own #cite calls instead
+    cite = []
+    if s["bibliography"]:
+        cite = ["--citeproc", "--bibliography", str(root / s["bibliography"])]
+        if s["csl"]:
+            cite += ["--csl", str(root / s["csl"])]
     cmd = ["pandoc", str(bd / "body.md"), "-f", "markdown+raw_attribute+footnotes+pipe_tables",
-           "-t", "typst", "--wrap=preserve", "--lua-filter", str(bd / ".vbook/lib/vbook.lua"),
+           "-t", "typst-citations", "--wrap=preserve", *cite, "--lua-filter", str(bd / ".vbook/lib/vbook.lua"),
            "-M", f"vbook-root={root}", "-M", f"vbook-dpi={cfg['design']['figure-dpi']}",
            "-M", f"vbook-textwidth={textwidth_mm(cfg['_page']):.1f}",
            "-M", f"vbook-parse-headings={'true' if s['parse-headings'] else 'false'}",
            "-M", f"vbook-shift={int(s['shift-headings'])}",
            "-M", f"vbook-overlays={root / s['overlays']}", "-o", str(bd / "body.typ")]
-    if s["bibliography"]:
-        cmd += ["--citeproc", "--bibliography", str(root / s["bibliography"])]
-        if s["csl"]:
-            cmd += ["--csl", str(root / s["csl"])]
     run(cmd)
     body = (bd / "body.typ").read_text(encoding="utf-8")
     tpl = cfg["design"]["template"]
@@ -604,7 +609,7 @@ def cmd_check(root, report=False):
     cfg, out = build(root)
     md, fs = assemble(root, cfg)
     src_notes = len(re.findall(r"^\[\^[^\]]+\]:", md, re.M))
-    src_figs = len(re.findall(r"^!\[[^\]]*\]\([^)]+\)", md, re.M))
+    src_figs = len(re.findall(r"^!\[.*\]\([^)]+\)", md, re.M))        # alt text may hold a note marker
     notes = count(root, "footnote")
     figs = count(root, "figure.where(kind: image)")
     missing = [f for f in set(pdffonts(out)) if "LastResort" in f]
@@ -867,16 +872,87 @@ def cmd_new(dest):
     print(f"started {dest}; edit book.toml, then: vbook build {dest}")
 
 
+def slug(text, n=40):
+    t = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
+    t = re.sub(r"\{[^}]*\}|\[\^[^\]]*\]|[^A-Za-z0-9]+", "-", t).strip("-").lower()
+    return t[:n].rstrip("-") or "section"
+
+
+def cmd_import(dest, files):
+    """Split a document Pandoc can read into front/ and text/ section files, with its images in figures/."""
+    if not files:
+        die("vbook import DIR FILE...: name the document(s) to import")
+    srcs = [Path(f).resolve() for f in files]
+    for f in srcs:
+        if not f.exists():
+            die(f"{f} not found")
+    fresh = not (dest / "book.toml").exists()
+    if fresh:
+        dest.mkdir(parents=True, exist_ok=True)
+        shutil.copy(HERE / "starter/book.toml", dest / "book.toml")
+        for d in ("front", "text", "back", "figures", "proof"):
+            (dest / d).mkdir(exist_ok=True)
+        shutil.copy(HERE / "starter/figures/overlays.json", dest / "figures/overlays.json")
+        shutil.copy(HERE / "starter/proof/return.md", dest / "proof/return.md")
+    for d in ("front", "text"):
+        if any((dest / d).glob("*.md")) and not fresh:
+            die(f"{dest / d} already has section files; import into an empty book")
+    # notes are written at the end of each top-level section, so they stay with their chapter when split;
+    # images go to figures/, with paths relative to the book folder
+    md = run(["pandoc", *map(str, srcs), "-t",
+              "markdown-smart-raw_html-native_divs-native_spans-bracketed_spans-fenced_divs-header_attributes",
+              "--wrap=none", "--reference-location=section", "--markdown-headings=atx",
+              "--extract-media=figures"], cwd=dest).stdout
+    # Pandoc escapes brackets it writes; a bracketed span not followed by a link target is text, so page
+    # markers such as [p. 12] come back as the pattern [markers] page expects
+    md = re.sub(r"\\\[([^\]\n]*?)\\\](?![(\[{])", r"[\1]", md)
+    # a no-break space after "p." (Pandoc's and Word's abbreviation rule) becomes a space in short bracketed spans
+    md = re.sub(r"\[[^\]\n]{1,24}\]", lambda m: m.group(0).replace("\u00a0", " "), md)
+    parts, cur, title, n = [], [], None, 0
+    for line in md.split("\n"):
+        if re.match(r"# \S", line):
+            parts.append(cur); cur = []
+        cur.append(line)
+    parts.append(cur)
+    written = []
+    head = "\n".join(parts[0]).strip()
+    if head:
+        (dest / "front/00-front-matter.md").write_text(head + "\n", encoding="utf-8"); written.append("front/00-front-matter.md")
+    for part in parts[1:]:
+        n += 1
+        name = f"text/{n:02d}-{slug(part[0][2:])}.md"
+        (dest / name).write_text("\n".join(part).strip() + "\n", encoding="utf-8"); written.append(name)
+    if fresh:
+        with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as t:
+            t.write("$title$")
+        title = run(["pandoc", str(srcs[0]), "-t", "plain", "--standalone", "--template", t.name]).stdout.strip()
+        Path(t.name).unlink()
+        if title:
+            toml = (dest / "book.toml").read_text(encoding="utf-8")
+            (dest / "book.toml").write_text(toml.replace('title = "Title of the Book"', f"title = {json.dumps(title, ensure_ascii=False)}", 1), encoding="utf-8")
+    notes = len(re.findall(r"^\[\^[^\]]+\]:", md, re.M))
+    images = len([f for f in (dest / "figures/media").rglob("*") if f.is_file()]) if (dest / "figures/media").exists() else 0
+    for w in written:
+        print(w)
+    print(f"{len(written)} section files, {notes} notes, {images} images in figures/")
+    if n == 0:
+        print("no level-one headings: the text is one front-matter file; mark chapters with # and import again, or split it by hand")
+    print(f"next: edit {dest / 'book.toml'}, then: vbook check {dest}")
+
+
 def main():
     ap = argparse.ArgumentParser(prog="vbook", description=__doc__.split("\n")[0])
-    ap.add_argument("command", choices=["new", "build", "check", "sweep", "proof", "samples", "return", "fonts"])
+    ap.add_argument("command", choices=["new", "import", "build", "check", "sweep", "proof", "samples", "return", "fonts"])
     ap.add_argument("dir", nargs="?", default=".")
+    ap.add_argument("files", nargs="*", help="for import: the document(s) to import")
     ap.add_argument("--pages", help="for proof: pages to include, as typst --pages takes them (e.g. 1-12,40)")
     ap.add_argument("--report", action="store_true", help="for check: also write BUILD.md beside the PDF")
     a = ap.parse_args()
     root = Path(a.dir).resolve()
     if a.command == "new":
         cmd_new(root)
+    elif a.command == "import":
+        cmd_import(root, a.files)
     elif a.command == "build":
         build(root)
     elif a.command == "check":

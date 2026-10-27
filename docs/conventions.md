@@ -115,6 +115,23 @@ A paragraph of asterisks or dots alone (`* * *`, `· · ·`, `⁂`) is a section
 
 Pipe tables. They are set without a frame, with a rule under the header, in 8.2 pt, and they break across pages with the header repeated. Column widths follow the length of the longest cell in each column (Chinese, Japanese and Korean characters count double), unless the table is narrow enough to set at its natural widths or the source gives unequal widths in its dash row.
 
+## Tables too wide for the page
+
+A table with more columns than the measure holds can be written as raw Typst and wrapped in one of two functions from `lib/vbook.typ`: `#vb-small-table[...]` sets it in 7 pt with close cells across the text width, breaking across pages; `#vb-turned[...]` sets it on a page of its own turned through ninety degrees, in 6 pt, without running head or folio. Pandoc writes a Typst table from HTML with its row and column spans (`pandoc -f html -t typst`); the Lovelace sample sets nineteen tables from the 1843 printing this way, the diagrams of Notes D and G on turned pages. A footnote in a cell is written `#footnote[...]` and is numbered with the chapter's other notes.
+
+## Citations and bibliography
+
+With `bibliography` set in `book.toml` (BibTeX, BibLaTeX, CSL JSON or YAML), Pandoc citations are formatted by citeproc: `[@babbage1864, 136]` gives (Babbage 1864, 136), `@fuegi2003` gives Fuegi and Francis (2003), and `[-@key]` drops the name. Citations work in the text, in footnotes, in captions and in notes on chapter titles. The style is Chicago author-date unless `csl` names another. The list of works cited is set where a file holds
+
+```markdown
+# Bibliography
+
+::: {#refs}
+:::
+```
+
+with a hanging indent; put that file in `back/`.
+
 ## Glossary
 
 `glossary.csv` (the Vector Translation format: `source,reading,english,competitors,scope,decided,notes`) is set as the last chapter. `book.toml` chooses the columns and their headings.
