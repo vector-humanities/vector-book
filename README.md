@@ -71,22 +71,123 @@ A generated field, at print resolution:
 
 <p align="center"><img src="docs/img/detail-field.png" alt="Detail: part of a generated field, black regions with white stipple, a dotted contour, colour" width="100%"></p>
 
-## Use
+## Making a book
 
-Needs Python 3.11+, Pandoc 3, Typst 0.13 or later, and the template's fonts (`vbook fonts` lists them; all but Hiragino are open fonts).
+The steps below take a book from an empty folder to a PDF. They were run on macOS; on Linux the same commands work once the programs and fonts are installed, with open fonts in place of the Apple ones (see step 6).
+
+### 1. Install
+
+Vector Book needs Python 3.11 or later (standard library only), Pandoc 3, Typst 0.13 or later, and Poppler (`pdffonts` and `pdfinfo`, used by the checks). With Homebrew:
 
 ```bash
-./vbook new mybook          # start from the starter project
-./vbook build mybook        # assemble, convert, compile
-./vbook check mybook        # notes and figures set against the sources; missing glyphs (--report: book/BUILD.md)
-./vbook sweep mybook        # every non-ASCII character, checked for font fallback
-./vbook proof mybook        # contact sheet of the pages
-./vbook samples mybook      # the book in every template, matching pages side by side
-./vbook return mybook       # check, then write proof/return-NN.md for the translation side
-./vbook fonts mybook        # the font stacks, and which are installed
+brew install python pandoc typst poppler
+git clone https://github.com/vector-humanities/vector-book.git
 ```
 
-The specimen in [`examples/specimen/`](examples/specimen/) shows every convention and builds to [`examples/specimen/book/specimen.pdf`](examples/specimen/book/specimen.pdf). The gallery images are made by [`docs/src/gallery.py`](docs/src/gallery.py) from the specimen built in every template.
+Then install the fonts for the designs you want. Hiragino, Menlo and Apple Symbols come with macOS; the rest are open fonts:
+
+| Design | Fonts | Homebrew casks |
+|---|---|---|
+| all | Gentium Book Plus, Noto Serif JP, STIX Two, DejaVu Sans Mono | `font-gentium-book-plus font-noto-serif-jp font-stix font-dejavu` |
+| classic | EB Garamond 12 | `font-eb-garamond` |
+| modern | Source Serif 4, Source Sans 3 | `font-source-serif-4 font-source-sans-3` |
+| kintsugi | Crimson Pro, Shippori Mincho | `font-crimson-pro font-shippori-mincho` |
+| organic | Fira Sans Condensed, Archivo Black | `font-fira-sans-condensed font-archivo-black` |
+| vectors | IBM Plex Serif and Mono, Bricolage Grotesque, Space Grotesk | `font-ibm-plex-serif font-ibm-plex-mono font-bricolage-grotesque font-space-grotesk` |
+
+```bash
+brew install --cask font-gentium-book-plus font-noto-serif-jp font-stix font-dejavu font-eb-garamond
+```
+
+`vbook fonts mybook` prints the stacks the book's template uses and marks each face `ok` or missing.
+
+### 2. Start the book
+
+Vector Book stays in its own folder and is called by path; nothing is copied into the book's repository. `vbook new` makes a book folder from the starter project:
+
+```bash
+path/to/vector-book/vbook new mybook
+```
+
+```
+mybook/
+  book.toml            the manifest: title, credits, design, sources, imprint, cover, back
+  front/00-preface.md  front matter, in filename order
+  text/01-introduction.md
+  back/                appendices; the glossary is set last if book.toml names one
+  figures/overlays.json   English glosses to lay over figure labels
+  proof/return.md      the form for returns to the translation side
+```
+
+The examples below are run from the vector-book folder, as `./vbook`; from anywhere else, give the path to `vbook`.
+
+### 3. Fill in `book.toml`
+
+Edit `[book]`: title, subtitle, author, original title, credit line ("Vector translated by …"), affiliation and the credits paragraph. Under `[design]`, `template` picks the design (`classic`, `modern`, `kintsugi`, `organic`, `vectors`) and `cover` the cover (`plain` or `frame` for the first three; organic and vectors bring their own). `[sources]` lists the section files by glob, `[markers]` gives the source page-marker pattern, and `[imprint]` fills the page behind the title page: publisher, series, edition, copyright, licence, AI disclosure, cataloguing, ISBN and DOI. Every key is in [`docs/config.md`](docs/config.md); a key left out takes its default, and a missing imprint field leaves no gap.
+
+### 4. Write or drop in the text
+
+One Markdown file per section, numbered in reading order (`01-`, `02-`, …). A level-one heading opens a chapter; attributes give its number, original title and running head:
+
+```markdown
+# Categorical Contingency {num="Chapter 1" orig="定言的偶然" run="Categorical Contingency"}
+
+[p. 12] The text of the chapter, with the source edition's page twelve beginning here.[^c1-1]
+
+[^c1-1]: Tr. A translator's note.
+```
+
+`[p. N]` marks where a page of the source begins and is set in the margin. Notes are Pandoc footnotes with labels unique across the book. A figure is an image on its own line followed by a caption paragraph beginning **Figure N.**; glosses for its labels go in `figures/overlays.json`. Schemes, section breaks, verse, tables, the glossary and raw Typst are in [`docs/conventions.md`](docs/conventions.md). Working notes between `<!-- working -->` and `<!-- /working -->` stay in the files and are left out of the book. A finished vector translation arrives in this shape from the Vector Translation method ([`docs/handover.md`](docs/handover.md)).
+
+### 5. Build and check
+
+```bash
+./vbook build mybook        # the PDF, at book/book.pdf (or [book] output)
+./vbook check mybook        # page count; notes and figures set against the sources; missing glyphs
+```
+
+`check` rebuilds first and prints, for the starter book:
+
+```
+pages    10
+notes    1 set, 1 defined in the sources
+figures  0 set, 0 in the sources
+glyphs   no missing glyphs
+```
+
+A note or figure the sources define but the book does not set is a fault to fix before going further. `check --report` writes the same to `book/BUILD.md`, with the Vector Book commit, so the book can be rebuilt with the same version. Build after every chapter is added; each fault listed in [`docs/practice.md`](docs/practice.md) would have shown in a one-chapter book.
+
+### 6. Fonts and characters
+
+```bash
+./vbook sweep mybook
+```
+
+sets every non-ASCII character in the book on test pages, grouped by Unicode block, and reports a character that falls back to a font outside the stack or reaches none. Fix a missing glyph by adding a face to `[design] fonts.text`. A `fonts/` folder in the book folder is passed to Typst, so a book can carry its own open fonts for builds away from macOS.
+
+### 7. Choose the design
+
+```bash
+./vbook samples mybook      # build/samples.png and build/samples/<design>.pdf
+```
+
+sets the book's own pages (title page, chapter opening, a text page, a figure, the last chapter) in all five designs side by side, so the design is chosen on the text being typeset. Set the choice in `[design] template`. Organic takes `field-palette` (`mint-pink`, `acid`, `sand-sky`, `coral`, `electric`, `mono`) and vectors `vector-palette` (`electric`, `night`, `blueprint`, `garden`, `spectrum`), or your own colours; the generated imagery is seeded by the title, so each book has its own.
+
+### 8. Proof and return
+
+```bash
+./vbook proof mybook                   # build/proof.png: every page on one contact sheet
+./vbook proof mybook --pages 1-12      # some pages only
+./vbook return mybook                  # check, then write proof/return-NN.md
+```
+
+`return` lists the faults the checks can locate (duplicate or undefined note labels, missing images, unkeyed captions, glyph faults) with file and line, for the translation side to fix in the sources. Add what proofreading finds under them by hand; [`docs/handover.md`](docs/handover.md) sets out the kinds, responses and the book gate. Rebuild after each round of fixes.
+
+### 9. Publish
+
+Add the ISBN and DOI to `[imprint]` when they are assigned, rebuild, and run `check --report` for the final `BUILD.md`. The PDF in `book/` is the book.
+
+The specimen in [`examples/specimen/`](examples/specimen/) uses every convention and builds to [`examples/specimen/book/specimen.pdf`](examples/specimen/book/specimen.pdf); its files show how each is written. The gallery images are made by [`docs/src/gallery.py`](docs/src/gallery.py) from the specimen built in every template.
 
 ## Documentation
 
