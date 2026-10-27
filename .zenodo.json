@@ -1,0 +1,19 @@
+{
+  "title": "Vector Book: book design and typesetting for vector humanities editions and translations",
+  "upload_type": "software",
+  "description": "<p>Vector Book typesets a book from Markdown section files through Pandoc and Typst, in five designs: classic, modern, kintsugi, organic and vectors. It sets source page numbers in the margin, translator's and editor's notes, figures with glosses over their labels, wide tables on turned pages, citations and bibliographies, and an imprint page, and checks every build for lost notes, missing figures and missing glyphs. Books come from the Vector Translation method or from any document Pandoc reads. A Vector Humanities tool.</p>",
+  "creators": [
+    {
+      "name": "Berry, David M.",
+      "affiliation": "University of Sussex",
+      "orcid": "0000-0001-5106-4407"
+    }
+  ],
+  "license": "GPL-3.0-or-later",
+  "version": "0.1.0",
+  "keywords": ["typesetting", "book design", "scholarly editions", "translation", "Typst", "Pandoc", "digital humanities", "vector humanities"],
+  "related_identifiers": [
+    {"identifier": "https://github.com/vector-humanities/vector-book", "relation": "isSupplementTo", "scheme": "url"},
+    {"identifier": "https://vector-humanities.github.io/vector-book/", "relation": "isDocumentedBy", "scheme": "url"}
+  ]
+}
