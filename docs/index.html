@@ -105,6 +105,22 @@ figcaption { margin-top: 10px; font: 15px/1.4 var(--sans); color: var(--soft); }
 @media (max-width: 1150px) { .flow { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 640px) { .flow { grid-template-columns: 1fr; } }
 
+/* making a book */
+.how { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 10px 40px; padding: 34px 0; border-top: 1px solid var(--rule); }
+.how:last-child { border-bottom: 1px solid var(--rule); }
+.how .n { font: 400 54px/1 var(--display); color: var(--electric); }
+.how h3 { margin: 10px 0 0; font: 700 19px/1.2 var(--sans); text-transform: uppercase; letter-spacing: .05em; }
+.how .body { max-width: 860px; }
+.how .body > p { margin: 0 0 16px; }
+.how .body > p:last-child { margin-bottom: 0; }
+.how pre { margin: 0 0 16px; }
+.tablewrap { overflow-x: auto; margin: 0 0 16px; }
+table.fonts { border-collapse: collapse; width: 100%; font: 15px/1.4 var(--sans); background: #fff; }
+table.fonts th, table.fonts td { text-align: left; vertical-align: top; padding: 8px 12px; border-bottom: 1px solid var(--rule); }
+table.fonts th { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--soft); }
+table.fonts td:last-child { font: 13px/1.5 var(--mono); }
+@media (max-width: 900px) { .how { grid-template-columns: minmax(0, 1fr); } .how h3 { margin-top: 4px; } }
+
 pre { margin: 0; padding: 22px 24px; background: var(--ink); color: #f1eee6; overflow-x: auto; font: 15px/1.6 var(--mono); }
 pre .c { color: #9c9aa6; }
 code { font: .86em var(--mono); background: rgba(0,0,0,.05); padding: 1px 5px; }
@@ -138,7 +154,7 @@ footer ul { list-style: none; margin: 0; padding: 0; }
   <a class="name" href="#top">VECTOR BOOK</a>
   <nav aria-label="Sections">
     <a href="#designs">Designs</a><a href="#organic">Organic</a><a href="#vectors">Vectors</a><a href="#details">Details</a>
-    <a href="#prelims">Front matter</a><a href="#flow">From translation to book</a><a href="#use">Use</a>
+    <a href="#prelims">Front matter</a><a href="#flow">From translation to book</a><a href="#use">Making a book</a>
     <a href="https://github.com/vector-humanities/vector-book">GitHub</a>
   </nav>
 </header>
@@ -333,17 +349,79 @@ footer ul { list-style: none; margin: 0; padding: 0; }
 <section id="use">
   <div class="wide">
     <p class="kicker">Use</p>
-    <h2>Commands</h2>
-    <p class="lede">Python 3.11 or later with its standard library, Pandoc 3, Typst 0.13 or later, and the fonts of the chosen design, all of them open except Hiragino.</p>
-<pre><span class="c"># start, build, check</span>
-./vbook new mybook
-./vbook build mybook
-./vbook check mybook --report     <span class="c"># notes, figures, glyphs; book/BUILD.md</span>
-./vbook sweep mybook              <span class="c"># every non-ASCII character against the font stack</span>
-./vbook samples mybook            <span class="c"># the book in every design, side by side</span>
-./vbook proof mybook              <span class="c"># a contact sheet of the pages</span>
-./vbook return mybook             <span class="c"># located faults for the translation side</span></pre>
-    <p style="margin-top:26px">Documentation on GitHub: <a href="https://github.com/vector-humanities/vector-book/blob/main/docs/conventions.md">conventions</a>, <a href="https://github.com/vector-humanities/vector-book/blob/main/docs/config.md">configuration</a>, <a href="https://github.com/vector-humanities/vector-book/blob/main/docs/handover.md">handover</a>, <a href="https://github.com/vector-humanities/vector-book/blob/main/docs/practice.md">practice</a>.</p>
+    <h2>Making a book</h2>
+    <p class="lede">From an empty folder to a PDF in nine steps, run on macOS; on Linux the same commands work once the programs and fonts are installed, with open fonts in place of the Apple ones.</p>
+    <div class="howto">
+    <div class="how"><div><div class="n">1</div><h3>Install</h3></div><div class="body">
+      <p>Python 3.11 or later (standard library only), Pandoc 3, Typst 0.13 or later, and Poppler, whose <code>pdffonts</code> and <code>pdfinfo</code> the checks use. With Homebrew:</p>
+<pre>brew install python pandoc typst poppler
+git clone https://github.com/vector-humanities/vector-book.git</pre>
+      <p>Then the fonts of the designs you want. Hiragino, Menlo and Apple Symbols come with macOS; the rest are open fonts.</p>
+      <div class="tablewrap"><table class="fonts">
+        <tr><th>Design</th><th>Fonts</th><th>Homebrew casks</th></tr>
+        <tr><td>all</td><td>Gentium Book Plus, Noto Serif JP, STIX Two, DejaVu Sans Mono</td><td>font-gentium-book-plus font-noto-serif-jp font-stix font-dejavu</td></tr>
+        <tr><td>classic</td><td>EB Garamond 12</td><td>font-eb-garamond</td></tr>
+        <tr><td>modern</td><td>Source Serif 4, Source Sans 3</td><td>font-source-serif-4 font-source-sans-3</td></tr>
+        <tr><td>kintsugi</td><td>Crimson Pro, Shippori Mincho</td><td>font-crimson-pro font-shippori-mincho</td></tr>
+        <tr><td>organic</td><td>Fira Sans Condensed, Archivo Black</td><td>font-fira-sans-condensed font-archivo-black</td></tr>
+        <tr><td>vectors</td><td>IBM Plex Serif and Mono, Bricolage Grotesque, Space Grotesk</td><td>font-ibm-plex-serif font-ibm-plex-mono font-bricolage-grotesque font-space-grotesk</td></tr>
+      </table></div>
+<pre>brew install --cask font-gentium-book-plus font-noto-serif-jp font-stix font-dejavu font-eb-garamond</pre>
+      <p><code>vbook fonts mybook</code> prints the stacks of the book's design and marks each face <code>ok</code> or missing.</p>
+    </div></div>
+    <div class="how"><div><div class="n">2</div><h3>Start the book</h3></div><div class="body">
+      <p>Vector Book stays in its own folder and is called by path; nothing is copied into the book's repository. <code>vbook new</code> makes a book folder from the starter project:</p>
+<pre>./vbook new mybook
+
+mybook/
+  book.toml               <span class="c"># title, credits, design, sources, imprint, cover, back</span>
+  front/00-preface.md     <span class="c"># front matter, in filename order</span>
+  text/01-introduction.md
+  back/                   <span class="c"># appendices; the glossary is set last</span>
+  figures/overlays.json   <span class="c"># English glosses laid over figure labels</span>
+  proof/return.md         <span class="c"># the form for returns to the translation side</span></pre>
+    </div></div>
+    <div class="how"><div><div class="n">3</div><h3>Fill in book.toml</h3></div><div class="body">
+      <p><code>[book]</code> holds the title, subtitle, author, original title, credit line (&ldquo;Vector translated by &hellip;&rdquo;), affiliation and credits paragraph. Under <code>[design]</code>, <code>template</code> picks the design and <code>cover</code> the cover (<code>plain</code> or <code>frame</code> for classic, modern and kintsugi; organic and vectors bring their own). <code>[sources]</code> lists the section files by glob, <code>[markers]</code> gives the page-marker pattern, and <code>[imprint]</code> fills the page behind the title page: publisher, series, edition, copyright, licence, AI disclosure, cataloguing, ISBN and DOI.</p>
+      <p>Every key is in <a href="https://github.com/vector-humanities/vector-book/blob/main/docs/config.md">config.md</a>. A key left out takes its default, and a missing imprint field leaves no gap.</p>
+    </div></div>
+    <div class="how"><div><div class="n">4</div><h3>Write the text</h3></div><div class="body">
+      <p>One Markdown file per section, numbered in reading order. A level-one heading opens a chapter, with attributes for its number, original title and running head:</p>
+<pre># Categorical Contingency {num="Chapter 1" orig="定言的偶然" run="Categorical Contingency"}
+
+[p. 12] The chapter's text, page twelve of the source beginning here.[^c1-1]
+
+[^c1-1]: Tr. A translator's note.</pre>
+      <p><code>[p. N]</code> marks where a page of the source begins and is set in the margin. Notes are Pandoc footnotes with labels unique across the book. A figure is an image on its own line followed by a caption paragraph beginning <b>Figure N.</b>, with glosses for its labels in <code>figures/overlays.json</code>. Working notes between <code>&lt;!-- working --&gt;</code> and <code>&lt;!-- /working --&gt;</code> stay in the files and out of the book. Schemes, breaks, verse, tables, the glossary and raw Typst are in <a href="https://github.com/vector-humanities/vector-book/blob/main/docs/conventions.md">conventions.md</a>.</p>
+    </div></div>
+    <div class="how"><div><div class="n">5</div><h3>Build and check</h3></div><div class="body">
+<pre>./vbook build mybook     <span class="c"># book/book.pdf, or [book] output</span>
+./vbook check mybook     <span class="c"># rebuilds, then:</span>
+pages    10
+notes    1 set, 1 defined in the sources
+figures  0 set, 0 in the sources
+glyphs   no missing glyphs</pre>
+      <p>A note or figure the sources define and the book does not set is a fault to fix before going further. <code>check --report</code> writes the same to <code>book/BUILD.md</code> with the Vector Book commit, so the book can be rebuilt with the same version. Build after every chapter is added; each fault listed in <a href="https://github.com/vector-humanities/vector-book/blob/main/docs/practice.md">practice.md</a> would have shown in a one-chapter book.</p>
+    </div></div>
+    <div class="how"><div><div class="n">6</div><h3>Fonts and characters</h3></div><div class="body">
+<pre>./vbook sweep mybook</pre>
+      <p>Sets every non-ASCII character in the book on test pages, grouped by Unicode block, and reports a character that falls back to a font outside the stack or reaches none. A missing glyph is fixed by adding a face to <code>[design] fonts.text</code>. A <code>fonts/</code> folder in the book folder is passed to Typst, so a book can carry its own open fonts for builds away from macOS.</p>
+    </div></div>
+    <div class="how"><div><div class="n">7</div><h3>Choose the design</h3></div><div class="body">
+<pre>./vbook samples mybook   <span class="c"># build/samples.png, build/samples/&lt;design&gt;.pdf</span></pre>
+      <p>Sets the book's own pages (title page, chapter opening, a text page, a figure, the last chapter) in all five designs side by side, so the design is chosen on the text being typeset. The choice goes in <code>[design] template</code>. Organic takes <code>field-palette</code> and vectors <code>vector-palette</code>, or your own colours; the generated imagery is seeded by the title, so each book has its own.</p>
+    </div></div>
+    <div class="how"><div><div class="n">8</div><h3>Proof and return</h3></div><div class="body">
+<pre>./vbook proof mybook                <span class="c"># build/proof.png, every page on one sheet</span>
+./vbook proof mybook --pages 1-12   <span class="c"># some pages only</span>
+./vbook return mybook               <span class="c"># check, then proof/return-NN.md</span></pre>
+      <p><code>return</code> lists the faults the checks can locate (duplicate or undefined note labels, missing images, unkeyed captions, glyph faults) with file and line, for the translation side to fix in the sources. Proofreading adds its findings beneath them by hand. <a href="https://github.com/vector-humanities/vector-book/blob/main/docs/handover.md">handover.md</a> sets out the kinds, the responses and the book gate. Rebuild after each round.</p>
+    </div></div>
+    <div class="how"><div><div class="n">9</div><h3>Publish</h3></div><div class="body">
+      <p>Add the ISBN and DOI to <code>[imprint]</code> when they are assigned, rebuild, and run <code>check --report</code> for the final <code>BUILD.md</code>. The PDF in <code>book/</code> is the book.</p>
+      <p>The <a href="https://github.com/vector-humanities/vector-book/tree/main/examples/specimen">specimen</a> uses every convention and builds to <a href="https://github.com/vector-humanities/vector-book/blob/main/examples/specimen/book/specimen.pdf">specimen.pdf</a>; its files show how each is written.</p>
+    </div></div>
+    </div>
   </div>
 </section>
 </main>
