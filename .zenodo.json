@@ -6,14 +6,25 @@
     {
       "name": "Berry, David M.",
       "affiliation": "University of Sussex",
-      "orcid": "0000-0001-5106-4407"
+      "orcid": "0000-0002-7737-5586"
     }
   ],
-  "license": "GPL-3.0-or-later",
-  "version": "0.1.0",
-  "keywords": ["typesetting", "book design", "scholarly editions", "translation", "Typst", "Pandoc", "digital humanities", "vector humanities"],
+  "license": "GPL-3.0",
+  "keywords": [
+    "typesetting",
+    "book design",
+    "scholarly editions",
+    "translation",
+    "Typst",
+    "Pandoc",
+    "digital humanities",
+    "vector humanities"
+  ],
   "related_identifiers": [
-    {"identifier": "https://github.com/vector-humanities/vector-book", "relation": "isSupplementTo", "scheme": "url"},
-    {"identifier": "https://vector-humanities.github.io/vector-book/", "relation": "isDocumentedBy", "scheme": "url"}
+    {
+      "identifier": "https://vector-humanities.github.io/vector-book/",
+      "relation": "isDocumentedBy",
+      "resource_type": "other"
+    }
   ]
 }
