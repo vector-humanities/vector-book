@@ -3,6 +3,7 @@
 <h1 align="center">Vector Book</h1>
 <p align="center">Book design and typesetting for vector humanities editions and translations<br>
 <sub>A Vector Humanities tool · alpha · GPL-3.0 · <a href="https://vector-humanities.github.io/vector-book/">vector-humanities.github.io/vector-book</a></sub></p>
+<p align="center"><a href="https://doi.org/10.5281/zenodo.23736367"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.23736367.svg" alt="DOI 10.5281/zenodo.23736367"></a></p>
 
 ---
 
@@ -214,6 +215,12 @@ The specimen in [`examples/specimen/`](examples/specimen/) uses every convention
 | [`AGENTS.md`](AGENTS.md) | Instructions for agents working on this repository |
 
 Vector Book is stage 7 of the Vector Translation method, and serves editions as well as translations.
+
+## Citation
+
+Berry, D. M. (2026) *Vector Book: book design and typesetting for vector humanities editions and translations*. Version 0.1.1. Zenodo. https://doi.org/10.5281/zenodo.23736368
+
+To cite every version, use the concept DOI, https://doi.org/10.5281/zenodo.23736367. `CITATION.cff` gives the same record for GitHub's "Cite this repository".
 
 ## Layout
 

@@ -20,6 +20,7 @@ repository-code: "https://github.com/vector-humanities/vector-book"
 url: "https://vector-humanities.github.io/vector-book/"
 license: GPL-3.0-or-later
 version: "0.1.1"
+doi: "10.5281/zenodo.23736367"
 date-released: "2026-10-28"
 keywords:
   - typesetting
