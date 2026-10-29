@@ -3,7 +3,7 @@
 <h1 align="center">Vector Book</h1>
 <p align="center">Book design and typesetting for vector humanities editions and translations<br>
 <sub>A Vector Humanities tool · alpha · GPL-3.0 · <a href="https://vector-humanities.github.io/vector-book/">vector-humanities.github.io/vector-book</a></sub></p>
-<p align="center"><a href="https://doi.org/10.5281/zenodo.23736367"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.23736367.svg" alt="DOI 10.5281/zenodo.23736367"></a></p>
+<p align="center"><a href="https://doi.org/10.5281/zenodo.23736367"><img src="https://zenodo.org/badge/1429538830.svg" alt="DOI"></a></p>
 
 ---
 
