@@ -84,7 +84,11 @@ A caption written as the image's alt text also works. The figure is built as fol
                               {"x": 0.92, "y": 0.10, "en": "the contin-\ngent", "align": "right"} ] }
   ```
 
-  `x` and `y` are fractions of the image's width and height (the top left of the gloss). `align: "right"` sets the gloss to end at `x`. A newline breaks the line; a hyphen before a newline joins the word. To leave a dense figure without overlays, write `{overlays="no"}` after its image and give the English in the key.
+  `x` and `y` are fractions of the image's width and height (the top left of the gloss). `align: "right"` sets the gloss to end at `x`. A newline breaks the line; a hyphen before a newline joins the word.
+
+  For a label along a line or set vertically, give `"anchor": "center"`, so that `x` and `y` are the gloss's centre, and `"angle"` in degrees, clockwise: `{"x": 0.37, "y": 0.30, "en": "causality", "anchor": "center", "angle": 45}`. Place a gloss along a diagonal beside the half of the line where the word begins, centred on that half and short of any crossing, on the side away from the author's characters; set a gloss for a word printed vertically beside the figure vertically beside it (`"angle": 90`), outside the drawing; set paired glosses at the same height.
+
+  To leave a dense figure without overlays, write `{overlays="no"}` after its image and give the English in the key.
 
 Figures do not break across pages. A List of Figures follows the Contents when the book has any.
 

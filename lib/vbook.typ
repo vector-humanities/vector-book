@@ -80,9 +80,18 @@
     framed(box(width: s.width, height: s.height, {
       img
       for o in overlays {
-        let ra = o.at("align", default: "left") == "right"
-        place(top + left, dx: o.x * s.width - (if ra { 60mm } else { 0mm }), dy: o.y * s.height,
-          gloss(o.en, ralign: ra))
+        if o.at("anchor", default: none) == "center" {
+          // centred on (x, y) and turned by angle (clockwise), for labels along a line or set vertically
+          let st = vb-style.get()
+          let g = text(st.gloss-size, style: "italic", fill: st.gloss-fill, font: st.gloss-font, hyphenate: false, o.en)
+          let m = measure(g)
+          place(top + left, dx: o.x * s.width - m.width / 2, dy: o.y * s.height - m.height / 2,
+            box(width: m.width, height: m.height, rotate(o.at("angle", default: 0deg), reflow: false, g)))
+        } else {
+          let ra = o.at("align", default: "left") == "right"
+          place(top + left, dx: o.x * s.width - (if ra { 60mm } else { 0mm }), dy: o.y * s.height,
+            gloss(o.en, ralign: ra))
+        }
       }
     }))
   }

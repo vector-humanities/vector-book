@@ -77,8 +77,11 @@ local function overlays_for(src, attr)
     local en = tostring(o.en):gsub('%-\n', ''):gsub('\n', '\\\n')
     local doc = pandoc.read(en, 'markdown')
     local inl = doc.blocks[1] and doc.blocks[1].content or {}
-    table.insert(parts, string.format('(x: %s, y: %s, en: [%s], align: %s)',
-      tostring(o.x), tostring(o.y), ty(inl), tystr(o.align or 'left')))
+    local extra = ''
+    if o.anchor then extra = extra .. ', anchor: ' .. tystr(o.anchor) end
+    if o.angle then extra = extra .. ', angle: ' .. tostring(o.angle) .. 'deg' end
+    table.insert(parts, string.format('(x: %s, y: %s, en: [%s], align: %s%s)',
+      tostring(o.x), tostring(o.y), ty(inl), tystr(o.align or 'left'), extra))
   end
   return '(' .. table.concat(parts, ', ') .. ',)'
 end
