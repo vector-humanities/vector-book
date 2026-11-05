@@ -28,7 +28,7 @@ build/                 working files (written by Vector Book; ignore it in git)
 | `[book]` | translation | Title, subtitle, author, original title, credit line ("Vector translated by …"), affiliation, and `credits`: the edition translated with its library and identifier, image credit, rights line, conventions note |
 | `[sources]` | translation | Order: `front`, `body`, `back` as globs (`text/translation/*.md`) or lists of files; `glossary`; `overlays` |
 | `[markers]` | translation | The page-marker pattern, and patterns to strip (image numbers) |
-| `[imprint]` | publisher (the series) | Publisher, series, edition, copyright and licence lines, cataloguing, ISBN and DOI; the imprint page |
+| `[imprint]` | publisher (the series), at finalisation | Publisher, series, edition, copyright and licence lines, cataloguing, ISBN and DOI; the imprint page. Absent until the book is finalised |
 | `[design]` | design | Template (chosen from `vbook samples`), cover, notes per chapter or through the book, protected words, font overrides |
 | `[cover]`, `[back]`, `[frontispiece]` | design | Cover text and colours, portrait, quotation, blurb |
 
@@ -102,7 +102,7 @@ A book is ready for the translator's sign-off when:
 2. the latest `vt_bookcheck.py` run has no open findings;
 3. every `return-NN.md` and every `check-NN.md` in `proof/` is CLOSED.
 
-The translator then signs off the book in `STATUS.md`, with the date, the Vector Book commit from `BUILD.md`, and the PDF. Identifiers come last: when a book is published, its ISBN and DOI go into `[imprint] isbn` and `doi`, and the book is rebuilt and checked once more before release. Legal deposit is an option at the end, decided per book.
+The translator then signs off the book in `STATUS.md`, with the date, the Vector Book commit from `BUILD.md`, and the PDF. A book enters the Vector Humanities imprint only at finalisation: until then `book.toml` has no `[imprint]` table, and the imprint page carries only the credits and the typesetting line. At finalisation the series side writes the table. Identifiers come last: when a book is published, its ISBN and DOI go into `[imprint] isbn` and `doi`, and the book is rebuilt and checked once more before release. Legal deposit is an option at the end, decided per book.
 
 ## Running the tool
 

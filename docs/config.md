@@ -88,7 +88,7 @@ Use TOML's single-quoted strings for regular expressions, so that backslashes ar
 
 ## [imprint]
 
-The imprint page, on the back of the title page. The head of the page reads, from the top: the logo, the series name (in upper and lower case, roman or italic, or in tracked capitals, by `series-style`; with its number, if set, in lining figures), the publisher in tracked capitals, then place and web address. `credits` from `[book]` and the fields below stand at the foot, in this order. Every field is optional and a missing one leaves no gap. In a series, the publisher's side writes this table.
+The imprint page, on the back of the title page. The head of the page reads, from the top: the logo, the series name (in upper and lower case, roman or italic, or in tracked capitals, by `series-style`; with its number, if set, in lining figures), the publisher in tracked capitals, then place and web address. `credits` from `[book]` and the fields below stand at the foot, in this order. Every field is optional and a missing one leaves no gap. In a series, the publisher's side writes this table, at finalisation: a book has no `[imprint]` until then.
 
 | Key | |
 |---|---|
