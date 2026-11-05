@@ -238,6 +238,6 @@ brand/               the mark and its generator
 
 ## Status
 
-Alpha, October 2026. The full Kuki book builds in every design: 473 notes and 22 figures set, no missing glyphs (classic 242 pp., organic 284 pp., vectors 300 pp.). The Lovelace sample edition builds in every design: 37 notes, 2 figures, two tables on three turned pages. To come: a facing-page layout for literal and readable versions, EPUB and HTML output, and open CJK fonts for builds away from macOS.
+Alpha, October 2026. The full Kuki book builds in every design: 473 notes and 22 figures set, no missing glyphs (classic 242 pp., organic 284 pp., vectors 300 pp.). The Lovelace sample edition builds in every design: 37 notes, 2 figures, two tables on three turned pages. To come: a facing-page layout for the literal translation and the translation, EPUB and HTML output, and open CJK fonts for builds away from macOS.
 
 Created by David M. Berry. Licence: GNU General Public License, version 3 or later.
