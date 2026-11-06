@@ -102,7 +102,7 @@ A book is ready for the translator's sign-off when:
 2. the latest `vt_bookcheck.py` run has no open findings;
 3. every `return-NN.md` and every `check-NN.md` in `proof/` is CLOSED.
 
-The translator then signs off the book in `STATUS.md`, with the date, the Vector Book commit from `BUILD.md`, and the PDF. A book enters the Vector Humanities imprint only at finalisation: until then `book.toml` has no `[imprint]` table, and the imprint page carries only the credits and the typesetting line. At finalisation the series side writes the table. Identifiers come last: when a book is published, its ISBN and DOI go into `[imprint] isbn` and `doi`, and the book is rebuilt and checked once more before release. Legal deposit is an option at the end, decided per book.
+The translator then signs off the book in `STATUS.md`, with the date, the Vector Book and source commits from `BUILD.md`, and the PDF. A book enters the Vector Humanities imprint only at finalisation: until then `book.toml` has no `[imprint]` table, and the imprint page carries only the credits and the typesetting line. At finalisation the series side writes the table. Identifiers come last: when a book is published, its ISBN and DOI go into `[imprint] isbn` and `doi`, and the book is rebuilt and checked once more before release. Legal deposit is an option at the end, decided per book.
 
 ## Running the tool
 
@@ -112,7 +112,7 @@ Vector Book stays in its own repository and is called by path; nothing is copied
 path/to/vector-book/vbook check path/to/book --report
 ```
 
-`BUILD.md` records the Vector Book commit, so a book can be rebuilt with the same version. Needs Python 3.11+, Pandoc 3, Typst 0.13 or later, and the template's fonts (`vbook fonts`).
+`BUILD.md` records the Vector Book commit and the commit of the book's own repository (with its tag, and a mark if the sources have uncommitted changes), so a book can be rebuilt from the same text with the same version. Needs Python 3.11+, Pandoc 3, Typst 0.13 or later, and the template's fonts (`vbook fonts`).
 
 ## Not yet
 

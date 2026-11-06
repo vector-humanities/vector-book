@@ -597,6 +597,17 @@ def unkeyed_captions(md):
     return out
 
 
+def source_version(root):
+    """The commit of the book's own repository, marked if the working tree differs from it."""
+    r = subprocess.run(["git", "-C", str(root), "rev-parse", "--short", "HEAD"], capture_output=True, text=True)
+    if r.returncode:
+        return "not in a git repository"
+    top = subprocess.run(["git", "-C", str(root), "rev-parse", "--show-toplevel"], capture_output=True, text=True).stdout.strip()
+    tag = subprocess.run(["git", "-C", str(root), "describe", "--tags", "--exact-match"], capture_output=True, text=True).stdout.strip()
+    dirty = subprocess.run(["git", "-C", str(root), "status", "--porcelain", "--", ".", ":!book", ":!build"], capture_output=True, text=True).stdout.strip()
+    return f"{Path(top).name} {r.stdout.strip()}" + (f" ({tag})" if tag else "") + (", with uncommitted changes" if dirty else "")
+
+
 def tool_version():
     try:
         r = subprocess.run(["git", "-C", str(HERE), "describe", "--always", "--dirty"], text=True, capture_output=True)
@@ -631,7 +642,7 @@ def cmd_check(root, report=False):
             f"- Built: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}\n"
             f"- Output: `{out.relative_to(root)}`\n"
             f"- Vector Book: {tool_version()}; template `{cfg['design']['template']}`, cover `{cfg['design']['cover']}`\n"
-            f"- Sources: {len(fs)} files\n"
+            f"- Sources: {len(fs)} files, {source_version(root)}\n"
             f"- Result: {'FAILED' if failed else 'passed'}\n\n"
             "```\n" + "\n".join(lines) + "\n```\n\n"
             "Files, in order:\n\n" + "".join(f"- `{f.relative_to(root)}`\n" for f in fs), encoding="utf-8")
@@ -827,15 +838,21 @@ def cmd_samples(root):
     sd = root / "build" / "samples"
     if sd.exists():
         shutil.rmtree(sd)
-    rows = []
+    rows, chosen = [], None
     for name in names:
         build(root, quiet=True, template=name, output=f"build/samples/{name}.pdf")
         chapters = evaluate(root, "query(heading.where(level: 1)).map(h => h.location().page())")
         numbered = evaluate(root, "query(heading.where(level: 1)).filter(h => h.outlined and h.supplement != []).map(h => h.location().page())")
+        outlined = evaluate(root, "query(heading.where(level: 1)).filter(h => h.outlined).map(h => h.location().page())")
         figures = evaluate(root, "query(figure.where(kind: image)).map(f => f.location().page())")
-        first = numbered[0] if numbered else next((p for p in chapters if p > 5), chapters[0] if chapters else 1)
-        pick = [3, first, first + 1] + figures[:1] + chapters[-1:]
-        pick = sorted(set(pick), key=pick.index)
+        opens = numbered or outlined or chapters or [1]
+        # the first chapter with a second page of text after its opening (a short one is followed by a blank verso),
+        # chosen once, so that every design shows the same chapter
+        if chosen is None:
+            chosen = next((i for i, (p, q) in enumerate(zip(opens, opens[1:])) if q - p > 2), 0)
+        first = opens[min(chosen, len(opens) - 1)]
+        pick = [3, first, first + 1] + [f for f in figures if f not in (first, first + 1)][:1] + chapters[-1:]
+        pick = sorted(set(pick))
         run(["typst", "compile", *typst_args(root), "--format", "png", "--ppi", "60",
              "--pages", ",".join(map(str, pick)), str(root / "build/main.typ"), str(sd / f"{name}-{{0p}}.png")])
         imgs = sorted(sd.glob(f"{name}-*.png"))

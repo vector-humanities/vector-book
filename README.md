@@ -170,7 +170,7 @@ figures  0 set, 0 in the sources
 glyphs   no missing glyphs
 ```
 
-A note or figure the sources define but the book does not set is a fault to fix before going further. `check --report` writes the same to `book/BUILD.md`, with the Vector Book commit, so the book can be rebuilt with the same version. Build after every chapter is added; each fault listed in [`docs/practice.md`](docs/practice.md) would have shown in a one-chapter book.
+A note or figure the sources define but the book does not set is a fault to fix before going further. `check --report` writes the same to `book/BUILD.md`, with the Vector Book commit and the commit of the book's own repository, so the book can be rebuilt from the same text with the same version. Build after every chapter is added; each fault listed in [`docs/practice.md`](docs/practice.md) would have shown in a one-chapter book.
 
 ### 6. Fonts and characters
 
